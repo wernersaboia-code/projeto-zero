@@ -1,0 +1,19 @@
+{
+	"names": [
+		"Almaria", "Beloria", "Castellan", "Drakoria", "Eldoria",
+		"Fenmark", "Granthia", "Havenshore", "Ironvale", "Jadera",
+		"Krynn", "Lothrain", "Mornhaven", "Nexara", "Ostoria",
+		"Prydonia", "Quorath", "Rivenmark", "Sylvania", "Tornath",
+		"Umbaria", "Valdoria", "Westerly", "Xandria", "Yorland",
+		"Zephyria", "Arcanum", "Bastion", "Cinder", "Delphia",
+		"Evermist", "Frosthold", "Glimmer", "Hearth", "Ironhold",
+		"Jadecrest", "Kingsland", "Lunaris", "Mistvale", "Northgard",
+		"Oakenshire", "Pinehold", "Quartz", "Redmarch", "Silvercove",
+		"Thornwick", "Unity", "Verdant", "Whitestone", "Ashford"
+	],
+	"adjectives": [
+		"United", "Greater", "Federal", "Democratic", "Royal",
+		"Free", "Grand", "New", "Old", "Northern",
+		"Southern", "Eastern", "Western", "Central", "Coastal"
+	]
+}

@@ -1,0 +1,1313 @@
+﻿{
+    "countries":  [
+                      {
+                          "id":  2989,
+                          "name":  "United States",
+                          "color":  "FF3C3CFF",
+                          "capitalId":  2989,
+                          "tag":  "USA",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "United States"
+                      },
+                      {
+                          "id":  2499,
+                          "name":  "Canada",
+                          "color":  "FFFF0000",
+                          "capitalId":  2499,
+                          "tag":  "CAN",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Canada"
+                      },
+                      {
+                          "id":  2601,
+                          "name":  "Mexico",
+                          "color":  "FF006847",
+                          "capitalId":  2601,
+                          "tag":  "MEX",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Mexico"
+                      },
+                      {
+                          "id":  2727,
+                          "name":  "Cuba",
+                          "color":  "FF002A8F",
+                          "capitalId":  2727,
+                          "tag":  "CUB",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Cuba"
+                      },
+                      {
+                          "id":  2503,
+                          "name":  "Dominican Republic",
+                          "color":  "FF002D62",
+                          "capitalId":  2503,
+                          "tag":  "DOM",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Dominican Republic"
+                      },
+                      {
+                          "id":  2504,
+                          "name":  "Haiti",
+                          "color":  "FF00209F",
+                          "capitalId":  2504,
+                          "tag":  "HAI",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Haiti"
+                      },
+                      {
+                          "id":  2603,
+                          "name":  "Guatemala",
+                          "color":  "FF4997D0",
+                          "capitalId":  2603,
+                          "tag":  "GTM",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Guatemala"
+                      },
+                      {
+                          "id":  2604,
+                          "name":  "Honduras",
+                          "color":  "FF0073CF",
+                          "capitalId":  2604,
+                          "tag":  "HND",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Honduras"
+                      },
+                      {
+                          "id":  2605,
+                          "name":  "Nicaragua",
+                          "color":  "FF0067A0",
+                          "capitalId":  2605,
+                          "tag":  "NIC",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Nicaragua"
+                      },
+                      {
+                          "id":  2606,
+                          "name":  "Panama",
+                          "color":  "FFFFD100",
+                          "capitalId":  2606,
+                          "tag":  "PAN",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Panama"
+                      },
+                      {
+                          "id":  2607,
+                          "name":  "Costa Rica",
+                          "color":  "FF002B7F",
+                          "capitalId":  2607,
+                          "tag":  "CRI",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Costa Rica"
+                      },
+                      {
+                          "id":  2608,
+                          "name":  "Belize",
+                          "color":  "FF003F87",
+                          "capitalId":  2608,
+                          "tag":  "BLZ",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Belize"
+                      },
+                      {
+                          "id":  2602,
+                          "name":  "El Salvador",
+                          "color":  "FF003F87",
+                          "capitalId":  2602,
+                          "tag":  "SLV",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "El Salvador"
+                      },
+                      {
+                          "id":  2301,
+                          "name":  "Argentina",
+                          "color":  "FF75AADB",
+                          "capitalId":  2301,
+                          "tag":  "ARG",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Argentina"
+                      },
+                      {
+                          "id":  2302,
+                          "name":  "Bolivia",
+                          "color":  "FF007A33",
+                          "capitalId":  2302,
+                          "tag":  "BOL",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Bolivia"
+                      },
+                      {
+                          "id":  2303,
+                          "name":  "Brazil",
+                          "color":  "FF009739",
+                          "capitalId":  2303,
+                          "tag":  "BRA",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Brazil"
+                      },
+                      {
+                          "id":  2304,
+                          "name":  "Chile",
+                          "color":  "FF0000FF",
+                          "capitalId":  2304,
+                          "tag":  "CHL",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Chile"
+                      },
+                      {
+                          "id":  2305,
+                          "name":  "Colombia",
+                          "color":  "FFFFCD00",
+                          "capitalId":  2305,
+                          "tag":  "COL",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Colombia"
+                      },
+                      {
+                          "id":  2306,
+                          "name":  "Ecuador",
+                          "color":  "FFFFD100",
+                          "capitalId":  2306,
+                          "tag":  "ECU",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Ecuador"
+                      },
+                      {
+                          "id":  2309,
+                          "name":  "Paraguay",
+                          "color":  "FF003DA5",
+                          "capitalId":  2309,
+                          "tag":  "PRY",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Paraguay"
+                      },
+                      {
+                          "id":  2310,
+                          "name":  "Peru",
+                          "color":  "FFFFD100",
+                          "capitalId":  2310,
+                          "tag":  "PER",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Peru"
+                      },
+                      {
+                          "id":  2312,
+                          "name":  "Uruguay",
+                          "color":  "FF0038A8",
+                          "capitalId":  2312,
+                          "tag":  "URY",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Uruguay"
+                      },
+                      {
+                          "id":  2313,
+                          "name":  "Venezuela",
+                          "color":  "FFFFCD00",
+                          "capitalId":  2313,
+                          "tag":  "VEN",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Venezuela"
+                      },
+                      {
+                          "id":  2307,
+                          "name":  "Guyana",
+                          "color":  "FF009E49",
+                          "capitalId":  2307,
+                          "tag":  "GUY",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Guyana"
+                      },
+                      {
+                          "id":  1699,
+                          "name":  "France",
+                          "color":  "FF0000FF",
+                          "capitalId":  1699,
+                          "tag":  "FRA",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "France"
+                      },
+                      {
+                          "id":  1499,
+                          "name":  "Germany",
+                          "color":  "FFFFD700",
+                          "capitalId":  1499,
+                          "tag":  "DEU",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Germany"
+                      },
+                      {
+                          "id":  1599,
+                          "name":  "Italy",
+                          "color":  "FF008000",
+                          "capitalId":  1599,
+                          "tag":  "ITA",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Italy"
+                      },
+                      {
+                          "id":  1799,
+                          "name":  "Spain",
+                          "color":  "FFFFC0CB",
+                          "capitalId":  1799,
+                          "tag":  "ESP",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Spain"
+                      },
+                      {
+                          "id":  1301,
+                          "name":  "United Kingdom",
+                          "color":  "FF1E90FF",
+                          "capitalId":  1301,
+                          "tag":  "GBR",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "United Kingdom"
+                      },
+                      {
+                          "id":  1201,
+                          "name":  "Denmark",
+                          "color":  "FFC41E3A",
+                          "capitalId":  1201,
+                          "tag":  "DNK",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Denmark"
+                      },
+                      {
+                          "id":  1202,
+                          "name":  "Norway",
+                          "color":  "FFBA0C2F",
+                          "capitalId":  1202,
+                          "tag":  "NOR",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Norway"
+                      },
+                      {
+                          "id":  1204,
+                          "name":  "Sweden",
+                          "color":  "FFFFC726",
+                          "capitalId":  1204,
+                          "tag":  "SWE",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Sweden"
+                      },
+                      {
+                          "id":  1203,
+                          "name":  "Finland",
+                          "color":  "FFFFC726",
+                          "capitalId":  1203,
+                          "tag":  "FIN",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Finland"
+                      },
+                      {
+                          "id":  1801,
+                          "name":  "Switzerland",
+                          "color":  "FFFF0000",
+                          "capitalId":  1801,
+                          "tag":  "CHE",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Switzerland"
+                      },
+                      {
+                          "id":  1404,
+                          "name":  "Austria",
+                          "color":  "FFED2935",
+                          "capitalId":  1404,
+                          "tag":  "AUT",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Austria"
+                      },
+                      {
+                          "id":  1603,
+                          "name":  "Belgium",
+                          "color":  "FFFFD700",
+                          "capitalId":  1603,
+                          "tag":  "BEL",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Belgium"
+                      },
+                      {
+                          "id":  1604,
+                          "name":  "Netherlands",
+                          "color":  "FFFF6600",
+                          "capitalId":  1604,
+                          "tag":  "NLD",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Netherlands"
+                      },
+                      {
+                          "id":  1703,
+                          "name":  "Portugal",
+                          "color":  "FFFF0000",
+                          "capitalId":  1703,
+                          "tag":  "PRT",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Portugal"
+                      },
+                      {
+                          "id":  1306,
+                          "name":  "Ireland",
+                          "color":  "FF009B77",
+                          "capitalId":  1306,
+                          "tag":  "IRL",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Ireland"
+                      },
+                      {
+                          "id":  1106,
+                          "name":  "Poland",
+                          "color":  "FFDC143C",
+                          "capitalId":  1106,
+                          "tag":  "POL",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Poland"
+                      },
+                      {
+                          "id":  1101,
+                          "name":  "Belarus",
+                          "color":  "FFDC143C",
+                          "capitalId":  1101,
+                          "tag":  "BLR",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Belarus"
+                      },
+                      {
+                          "id":  1196,
+                          "name":  "Ukraine",
+                          "color":  "FFFFD700",
+                          "capitalId":  1196,
+                          "tag":  "UKR",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Ukraine"
+                      },
+                      {
+                          "id":  1104,
+                          "name":  "Romania",
+                          "color":  "FF002B7F",
+                          "capitalId":  1104,
+                          "tag":  "ROU",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Romania"
+                      },
+                      {
+                          "id":  1105,
+                          "name":  "Bulgaria",
+                          "color":  "FF009B77",
+                          "capitalId":  1105,
+                          "tag":  "BGR",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Bulgaria"
+                      },
+                      {
+                          "id":  1107,
+                          "name":  "Hungary",
+                          "color":  "FF436F4D",
+                          "capitalId":  1107,
+                          "tag":  "HUN",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Hungary"
+                      },
+                      {
+                          "id":  1109,
+                          "name":  "Czech Republic",
+                          "color":  "FF11457E",
+                          "capitalId":  1109,
+                          "tag":  "CZE",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Czech Republic"
+                      },
+                      {
+                          "id":  1108,
+                          "name":  "Slovakia",
+                          "color":  "FFFF0000",
+                          "capitalId":  1108,
+                          "tag":  "SVK",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Slovakia"
+                      },
+                      {
+                          "id":  1003,
+                          "name":  "Croatia",
+                          "color":  "FFFF0000",
+                          "capitalId":  1003,
+                          "tag":  "HRV",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Croatia"
+                      },
+                      {
+                          "id":  1004,
+                          "name":  "Serbia",
+                          "color":  "FF003893",
+                          "capitalId":  1004,
+                          "tag":  "SRB",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Serbia"
+                      },
+                      {
+                          "id":  1114,
+                          "name":  "Greece",
+                          "color":  "FF0D5EAF",
+                          "capitalId":  1114,
+                          "tag":  "GRC",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Greece"
+                      },
+                      {
+                          "id":  1110,
+                          "name":  "Latvia",
+                          "color":  "FF9E3039",
+                          "capitalId":  1110,
+                          "tag":  "LVA",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Latvia"
+                      },
+                      {
+                          "id":  1111,
+                          "name":  "Lithuania",
+                          "color":  "FFFFC726",
+                          "capitalId":  1111,
+                          "tag":  "LTU",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Lithuania"
+                      },
+                      {
+                          "id":  1112,
+                          "name":  "Estonia",
+                          "color":  "FF0072CE",
+                          "capitalId":  1112,
+                          "tag":  "EST",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Estonia"
+                      },
+                      {
+                          "id":  1001,
+                          "name":  "Bosnia",
+                          "color":  "FF8B4513",
+                          "capitalId":  1001,
+                          "tag":  "BIH",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Bosnia"
+                      },
+                      {
+                          "id":  1005,
+                          "name":  "Montenegro",
+                          "color":  "FFD40000",
+                          "capitalId":  1005,
+                          "tag":  "MNE",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Montenegro"
+                      },
+                      {
+                          "id":  1007,
+                          "name":  "Albania",
+                          "color":  "FFFF0000",
+                          "capitalId":  1007,
+                          "tag":  "ALB",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Albania"
+                      },
+                      {
+                          "id":  1008,
+                          "name":  "Slovenia",
+                          "color":  "FF005CE6",
+                          "capitalId":  1008,
+                          "tag":  "SVN",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Slovenia"
+                      },
+                      {
+                          "id":  1115,
+                          "name":  "North Macedonia",
+                          "color":  "FFFFD100",
+                          "capitalId":  1115,
+                          "tag":  "MKD",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "North Macedonia"
+                      },
+                      {
+                          "id":  889,
+                          "name":  "Russia",
+                          "color":  "FF8B0000",
+                          "capitalId":  889,
+                          "tag":  "RUS",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Russia"
+                      },
+                      {
+                          "id":  101,
+                          "name":  "Egypt",
+                          "color":  "FFB22222",
+                          "capitalId":  101,
+                          "tag":  "EGY",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Egypt"
+                      },
+                      {
+                          "id":  102,
+                          "name":  "Libya",
+                          "color":  "FF239B56",
+                          "capitalId":  102,
+                          "tag":  "LBY",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Libya"
+                      },
+                      {
+                          "id":  103,
+                          "name":  "Algeria",
+                          "color":  "FF006233",
+                          "capitalId":  103,
+                          "tag":  "DZA",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Algeria"
+                      },
+                      {
+                          "id":  104,
+                          "name":  "Morocco",
+                          "color":  "FFC1272D",
+                          "capitalId":  104,
+                          "tag":  "MAR",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Morocco"
+                      },
+                      {
+                          "id":  106,
+                          "name":  "Tunisia",
+                          "color":  "FFE70013",
+                          "capitalId":  106,
+                          "tag":  "TUN",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Tunisia"
+                      },
+                      {
+                          "id":  308,
+                          "name":  "Sudan",
+                          "color":  "FFD21034",
+                          "capitalId":  308,
+                          "tag":  "SDN",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Sudan"
+                      },
+                      {
+                          "id":  313,
+                          "name":  "South Sudan",
+                          "color":  "FF808080",
+                          "capitalId":  313,
+                          "tag":  "SSD",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "South Sudan"
+                      },
+                      {
+                          "id":  201,
+                          "name":  "Nigeria",
+                          "color":  "FF008000",
+                          "capitalId":  201,
+                          "tag":  "NGA",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Nigeria"
+                      },
+                      {
+                          "id":  210,
+                          "name":  "Ghana",
+                          "color":  "FF006B3F",
+                          "capitalId":  210,
+                          "tag":  "GHA",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Ghana"
+                      },
+                      {
+                          "id":  216,
+                          "name":  "Senegal",
+                          "color":  "FF00853E",
+                          "capitalId":  216,
+                          "tag":  "SEN",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Senegal"
+                      },
+                      {
+                          "id":  207,
+                          "name":  "Cote dIvoire",
+                          "color":  "FF009E60",
+                          "capitalId":  207,
+                          "tag":  "CIV",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Cote dIvoire"
+                      },
+                      {
+                          "id":  213,
+                          "name":  "Liberia",
+                          "color":  "FFBF2E2E",
+                          "capitalId":  213,
+                          "tag":  "LBR",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Liberia"
+                      },
+                      {
+                          "id":  412,
+                          "name":  "DR Congo",
+                          "color":  "FF007FFF",
+                          "capitalId":  412,
+                          "tag":  "COD",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "DR Congo"
+                      },
+                      {
+                          "id":  301,
+                          "name":  "Kenya",
+                          "color":  "FF00008B",
+                          "capitalId":  301,
+                          "tag":  "KEN",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Kenya"
+                      },
+                      {
+                          "id":  303,
+                          "name":  "Ethiopia",
+                          "color":  "FF009A44",
+                          "capitalId":  303,
+                          "tag":  "ETH",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Ethiopia"
+                      },
+                      {
+                          "id":  304,
+                          "name":  "Somalia",
+                          "color":  "FF4189DD",
+                          "capitalId":  304,
+                          "tag":  "SOM",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Somalia"
+                      },
+                      {
+                          "id":  310,
+                          "name":  "Tanzania",
+                          "color":  "FF1EB53A",
+                          "capitalId":  310,
+                          "tag":  "TZA",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Tanzania"
+                      },
+                      {
+                          "id":  401,
+                          "name":  "South Africa",
+                          "color":  "FF006400",
+                          "capitalId":  401,
+                          "tag":  "ZAF",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "South Africa"
+                      },
+                      {
+                          "id":  404,
+                          "name":  "Madagascar",
+                          "color":  "FFFC3D32",
+                          "capitalId":  404,
+                          "tag":  "MDG",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Madagascar"
+                      },
+                      {
+                          "id":  406,
+                          "name":  "Mozambique",
+                          "color":  "FF006600",
+                          "capitalId":  406,
+                          "tag":  "MOZ",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Mozambique"
+                      },
+                      {
+                          "id":  409,
+                          "name":  "Zimbabwe",
+                          "color":  "FFFFC726",
+                          "capitalId":  409,
+                          "tag":  "ZWE",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Zimbabwe"
+                      },
+                      {
+                          "id":  410,
+                          "name":  "Angola",
+                          "color":  "FFCC0000",
+                          "capitalId":  410,
+                          "tag":  "AGO",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Angola"
+                      },
+                      {
+                          "id":  411,
+                          "name":  "Zambia",
+                          "color":  "FF198A00",
+                          "capitalId":  411,
+                          "tag":  "ZMB",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Zambia"
+                      },
+                      {
+                          "id":  601,
+                          "name":  "Iran",
+                          "color":  "FF228B22",
+                          "capitalId":  601,
+                          "tag":  "IRN",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Iran"
+                      },
+                      {
+                          "id":  602,
+                          "name":  "Iraq",
+                          "color":  "FFCE1126",
+                          "capitalId":  602,
+                          "tag":  "IRQ",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Iraq"
+                      },
+                      {
+                          "id":  606,
+                          "name":  "Saudi Arabia",
+                          "color":  "FF006C35",
+                          "capitalId":  606,
+                          "tag":  "SAU",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Saudi Arabia"
+                      },
+                      {
+                          "id":  501,
+                          "name":  "Israel",
+                          "color":  "FF0000FF",
+                          "capitalId":  501,
+                          "tag":  "ISR",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Israel"
+                      },
+                      {
+                          "id":  503,
+                          "name":  "Jordan",
+                          "color":  "FFCE1126",
+                          "capitalId":  503,
+                          "tag":  "JOR",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Jordan"
+                      },
+                      {
+                          "id":  607,
+                          "name":  "Syria",
+                          "color":  "FF000000",
+                          "capitalId":  607,
+                          "tag":  "SYR",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Syria"
+                      },
+                      {
+                          "id":  608,
+                          "name":  "Lebanon",
+                          "color":  "FFFF0000",
+                          "capitalId":  608,
+                          "tag":  "LBN",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Lebanon"
+                      },
+                      {
+                          "id":  609,
+                          "name":  "Turkiye",
+                          "color":  "FFE30A17",
+                          "capitalId":  609,
+                          "tag":  "TUR",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Turkiye"
+                      },
+                      {
+                          "id":  610,
+                          "name":  "UAE",
+                          "color":  "FF00732F",
+                          "capitalId":  610,
+                          "tag":  "ARE",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "UAE"
+                      },
+                      {
+                          "id":  611,
+                          "name":  "Yemen",
+                          "color":  "FFCE1126",
+                          "capitalId":  611,
+                          "tag":  "YEM",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Yemen"
+                      },
+                      {
+                          "id":  604,
+                          "name":  "Oman",
+                          "color":  "FFFF0000",
+                          "capitalId":  604,
+                          "tag":  "OMN",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Oman"
+                      },
+                      {
+                          "id":  605,
+                          "name":  "Qatar",
+                          "color":  "FF8C1515",
+                          "capitalId":  605,
+                          "tag":  "QAT",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Qatar"
+                      },
+                      {
+                          "id":  603,
+                          "name":  "Kuwait",
+                          "color":  "FF007B3F",
+                          "capitalId":  603,
+                          "tag":  "KWT",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Kuwait"
+                      },
+                      {
+                          "id":  701,
+                          "name":  "Armenia",
+                          "color":  "FFFFA500",
+                          "capitalId":  701,
+                          "tag":  "ARM",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Armenia"
+                      },
+                      {
+                          "id":  702,
+                          "name":  "Azerbaijan",
+                          "color":  "FF00AE65",
+                          "capitalId":  702,
+                          "tag":  "AZE",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Azerbaijan"
+                      },
+                      {
+                          "id":  703,
+                          "name":  "Georgia",
+                          "color":  "FFFF0000",
+                          "capitalId":  703,
+                          "tag":  "GEO",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Georgia"
+                      },
+                      {
+                          "id":  989,
+                          "name":  "India",
+                          "color":  "FFFF8C00",
+                          "capitalId":  989,
+                          "tag":  "IND",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "India"
+                      },
+                      {
+                          "id":  910,
+                          "name":  "Pakistan",
+                          "color":  "FF006600",
+                          "capitalId":  910,
+                          "tag":  "PAK",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Pakistan"
+                      },
+                      {
+                          "id":  911,
+                          "name":  "Afghanistan",
+                          "color":  "FF006600",
+                          "capitalId":  911,
+                          "tag":  "AFG",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Afghanistan"
+                      },
+                      {
+                          "id":  907,
+                          "name":  "Nepal",
+                          "color":  "FFDC143C",
+                          "capitalId":  907,
+                          "tag":  "NPL",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Nepal"
+                      },
+                      {
+                          "id":  912,
+                          "name":  "Bangladesh",
+                          "color":  "FF006A4E",
+                          "capitalId":  912,
+                          "tag":  "BGD",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Bangladesh"
+                      },
+                      {
+                          "id":  909,
+                          "name":  "Sri Lanka",
+                          "color":  "FFFF8C00",
+                          "capitalId":  909,
+                          "tag":  "LKA",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Sri Lanka"
+                      },
+                      {
+                          "id":  704,
+                          "name":  "Kazakhstan",
+                          "color":  "FF00AFCA",
+                          "capitalId":  704,
+                          "tag":  "KAZ",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Kazakhstan"
+                      },
+                      {
+                          "id":  1999,
+                          "name":  "China",
+                          "color":  "FFFF0000",
+                          "capitalId":  1999,
+                          "tag":  "CHN",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "China"
+                      },
+                      {
+                          "id":  2001,
+                          "name":  "Japan",
+                          "color":  "FFF0F0F0",
+                          "capitalId":  2001,
+                          "tag":  "JPN",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Japan"
+                      },
+                      {
+                          "id":  2002,
+                          "name":  "North Korea",
+                          "color":  "FF024FA2",
+                          "capitalId":  2002,
+                          "tag":  "PRK",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "North Korea"
+                      },
+                      {
+                          "id":  2003,
+                          "name":  "South Korea",
+                          "color":  "FF003478",
+                          "capitalId":  2003,
+                          "tag":  "KOR",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "South Korea"
+                      },
+                      {
+                          "id":  2101,
+                          "name":  "Thailand",
+                          "color":  "FF0000FF",
+                          "capitalId":  2101,
+                          "tag":  "THA",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Thailand"
+                      },
+                      {
+                          "id":  2102,
+                          "name":  "Vietnam",
+                          "color":  "FFFF0000",
+                          "capitalId":  2102,
+                          "tag":  "VNM",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Vietnam"
+                      },
+                      {
+                          "id":  2103,
+                          "name":  "Myanmar",
+                          "color":  "FFFFCD00",
+                          "capitalId":  2103,
+                          "tag":  "MMR",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Myanmar"
+                      },
+                      {
+                          "id":  2106,
+                          "name":  "Philippines",
+                          "color":  "FFFFCD00",
+                          "capitalId":  2106,
+                          "tag":  "PHL",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Philippines"
+                      },
+                      {
+                          "id":  2107,
+                          "name":  "Indonesia",
+                          "color":  "FFFF0000",
+                          "capitalId":  2107,
+                          "tag":  "IDN",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Indonesia"
+                      },
+                      {
+                          "id":  2111,
+                          "name":  "Malaysia",
+                          "color":  "FFFFC726",
+                          "capitalId":  2111,
+                          "tag":  "MYS",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Malaysia"
+                      },
+                      {
+                          "id":  2113,
+                          "name":  "Singapore",
+                          "color":  "FFFF0000",
+                          "capitalId":  2113,
+                          "tag":  "SGP",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Singapore"
+                      },
+                      {
+                          "id":  2110,
+                          "name":  "Papua New Guinea",
+                          "color":  "FFFF0000",
+                          "capitalId":  2110,
+                          "tag":  "PNG",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Papua New Guinea"
+                      },
+                      {
+                          "id":  2297,
+                          "name":  "Australia",
+                          "color":  "FFFFD700",
+                          "capitalId":  2297,
+                          "tag":  "AUS",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "Australia"
+                      },
+                      {
+                          "id":  2202,
+                          "name":  "New Zealand",
+                          "color":  "FF00247D",
+                          "capitalId":  2202,
+                          "tag":  "NZL",
+                          "subRegions":  [
+
+                                         ],
+                          "capitalName":  "New Zealand"
+                      }
+                  ]
+}

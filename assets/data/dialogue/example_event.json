@@ -1,0 +1,5 @@
+{
+	"dialog_1": { "name": "SISTEMA", "text": "Bem-vindo ao Projeto Zero." },
+	"dialog_2": { "name": "SISTEMA", "text": "Este é um sistema de eventos baseado em diálogo." },
+	"dialog_3": { "name": "SISTEMA", "text": "Você pode usar JSON para definir textos de eventos, decisões diplomáticas, tutoriais e muito mais." }
+}

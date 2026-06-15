@@ -1,0 +1,71 @@
+{
+	"terrain_types": {
+		"deep_water": {
+			"id": 0,
+			"name": "Deep Water",
+			"color": "#0e2a4a",
+			"passable": false,
+			"movement_cost": 999,
+			"defense_modifier": 0.0
+		},
+		"shallow_water": {
+			"id": 1,
+			"name": "Shallow Water",
+			"color": "#1a4a7a",
+			"passable": true,
+			"movement_cost": 3.0,
+			"defense_modifier": -0.2
+		},
+		"plains": {
+			"id": 2,
+			"name": "Plains",
+			"color": "#6aad3a",
+			"passable": true,
+			"movement_cost": 1.0,
+			"defense_modifier": 0.0
+		},
+		"forest": {
+			"id": 3,
+			"name": "Forest",
+			"color": "#2a6a1e",
+			"passable": true,
+			"movement_cost": 2.0,
+			"defense_modifier": 0.3
+		},
+		"hills": {
+			"id": 4,
+			"name": "Hills",
+			"color": "#8a7a3a",
+			"passable": true,
+			"movement_cost": 1.5,
+			"defense_modifier": 0.2
+		},
+		"mountains": {
+			"id": 5,
+			"name": "Mountains",
+			"color": "#7a6a5a",
+			"passable": false,
+			"movement_cost": 999,
+			"defense_modifier": 0.5
+		},
+		"desert": {
+			"id": 6,
+			"name": "Desert",
+			"color": "#d4b63a",
+			"passable": true,
+			"movement_cost": 1.5,
+			"defense_modifier": -0.1
+		},
+		"tundra": {
+			"id": 7,
+			"name": "Tundra",
+			"color": "#b8c8b8",
+			"passable": true,
+			"movement_cost": 1.5,
+			"defense_modifier": 0.1
+		}
+	},
+	"hex_size": 10,
+	"grid_width": 320,
+	"grid_height": 200
+}

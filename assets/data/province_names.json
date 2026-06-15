@@ -1,0 +1,19 @@
+{
+	"prefixes": [
+		"North", "South", "East", "West", "New", "Old", "Port", "Fort",
+		"Upper", "Lower", "Inner", "Outer", "Great", "Little", "Mount"
+	],
+	"roots": [
+		"haven", "wood", "ford", "shire", "burg", "field", "more", "mere",
+		"bridge", "brook", "cliff", "dale", "dell", "down", "fair", "fell",
+		"gate", "glen", "grove", "ham", "heath", "hill", "holme", "hurst",
+		"ley", "lock", "marsh", "mead", "mill", "moor", "nook", "pool",
+		"ridge", "royd", "sand", "side", "stead", "stone", "thorp", "ton",
+		"vale", "wall", "wick", "wind", "wold", "worth", "yard", "by",
+		"land", "mark", "stock", "well", "acre", "beck", "bourn", "combe"
+	],
+	"suffixes": [
+		"Province", "Territory", "Region", "District", "County",
+		"Prefecture", "State", "March", "Reach", "Shire"
+	]
+}

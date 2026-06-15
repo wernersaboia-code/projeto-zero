@@ -1,0 +1,32 @@
+[gd_scene load_steps=5 format=3 uid="uid://bm0k5h7me48xr"]
+
+[ext_resource type="Script" path="res://scripts/camera/CameraController.gd" id="1_cam"]
+[ext_resource type="Script" path="res://scripts/map/HexGrid.gd" id="2_grid"]
+[ext_resource type="Script" path="res://scripts/ui/DebugOverlay.gd" id="4_debug"]
+[ext_resource type="PackedScene" path="res://scenes/ui/MainHUD.tscn" id="5_hud"]
+
+[node name="MainMap" type="Node2D"]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+script = ExtResource("1_cam")
+position = Vector2(1650, 2650)
+
+[node name="HexGrid" type="Node2D" parent="."]
+script = ExtResource("2_grid")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="DebugOverlay" type="Control" parent="UI"]
+script = ExtResource("4_debug")
+mouse_filter = 2
+
+[node name="Label" type="Label" parent="UI/DebugOverlay"]
+offset_left = 12.0
+offset_top = 48.0
+text = "Debug..."
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0, 1, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 2
+
+[node name="MainHUD" type="CanvasLayer" parent="." instance=ExtResource("5_hud")]
