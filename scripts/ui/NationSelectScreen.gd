@@ -117,7 +117,7 @@ func _populate_list(filter: String = "") -> void:
 
 		var btn = Button.new()
 		btn.text = "Select"
-		btn.theme_override_colors/font_color = Color(0.3, 0.7, 1.0)
+		btn.add_theme_color_override("font_color", Color(0.3, 0.7, 1.0))
 		btn.pressed.connect(_on_nation_selected.bind(nation.id))
 		hb.add_child(btn)
 

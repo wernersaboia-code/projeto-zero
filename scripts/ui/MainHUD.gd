@@ -13,6 +13,10 @@ const R = preload("res://scripts/economy/ResourceData.gd")
 @onready var _info_body: Label = $InfoPanel/MarginContainer/VBoxContainer/InfoLabel
 @onready var _resources_btn: Button = $TopBar/ResourcesBtn
 @onready var _resource_ledger: Panel = $ResourceLedger
+@onready var _pause_btn: Button = $TopBar/SpeedContainer/PauseBtn
+@onready var _speed_1x: Button = $TopBar/SpeedContainer/Speed1xBtn
+@onready var _speed_2x: Button = $TopBar/SpeedContainer/Speed2xBtn
+@onready var _speed_5x: Button = $TopBar/SpeedContainer/Speed5xBtn
 
 var _player_nation = null
 
@@ -23,7 +27,27 @@ func _ready() -> void:
 	EventBus.hex_hovered.connect(_on_hex_hovered)
 	EventBus.game_tick.connect(_on_game_tick)
 	_resources_btn.pressed.connect(_toggle_resource_ledger)
+	_pause_btn.pressed.connect(_on_pause_pressed)
+	_speed_1x.pressed.connect(_on_speed_pressed.bind(1.0))
+	_speed_2x.pressed.connect(_on_speed_pressed.bind(2.0))
+	_speed_5x.pressed.connect(_on_speed_pressed.bind(5.0))
 	_info_panel.hide()
+
+
+func _on_pause_pressed() -> void:
+	var gm = get_tree().root.get_node("GameManager")
+	if gm:
+		gm.toggle_pause()
+		_pause_btn.text = ">" if gm.is_paused else "||"
+
+
+func _on_speed_pressed(speed: float) -> void:
+	var gm = get_tree().root.get_node("GameManager")
+	if gm:
+		gm.set_speed(speed)
+		if gm.is_paused:
+			gm.is_paused = false
+			_pause_btn.text = "||"
 
 
 static func _fmt_treasury(val: float) -> String:
@@ -56,6 +80,10 @@ func _on_game_tick(_tick: int) -> void:
 
 
 func _update_display() -> void:
+	var gm = get_tree().root.get_node("GameManager")
+	if gm:
+		_date_label.text = "%04d.%02d.%02d" % [gm.game_year, gm.game_month, gm.game_day]
+
 	if not _player_nation:
 		return
 	_treasury_label.text = "$ " + _fmt_treasury(_player_nation.treasury)
@@ -68,6 +96,11 @@ func _update_display() -> void:
 			parts.append("%s%+.1f" % [icon, bal])
 	if not parts.is_empty():
 		_treasury_label.text += "  |  " + " ".join(parts)
+
+	var trade = _player_nation.trade_balance
+	if abs(trade) > 0.1:
+		var sign = "+" if trade >= 0 else ""
+		_treasury_label.text += "  |  Trade: " + sign + _fmt_treasury(trade)
 
 
 func _unhandled_input(event: InputEvent) -> void:

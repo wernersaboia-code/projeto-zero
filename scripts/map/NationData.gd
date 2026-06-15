@@ -12,6 +12,7 @@ var is_player: bool = false
 var treasury: float = 10000.0
 var gdp: float = 0.0
 var population: int = 0
+var trade_balance: float = 0.0  # positive = net exporter, negative = net importer
 
 # Resource stockpile (current stored amount of each resource)
 var resources: Dictionary = {}  # ResourceType -> float

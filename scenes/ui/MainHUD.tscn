@@ -55,9 +55,39 @@ theme_override_colors/font_color = Color(0.6, 1.0, 0.4, 1)
 theme_override_font_sizes/font_size = 18
 text = "$ 1,000,000"
 
+[node name="SpeedContainer" type="HBoxContainer" parent="TopBar"]
+offset_left = 410.0
+offset_top = 5.0
+offset_right = 530.0
+offset_bottom = 35.0
+
+[node name="PauseBtn" type="Button" parent="TopBar/SpeedContainer"]
+custom_minimum_size = Vector2(28, 26)
+theme_override_colors/font_color = Color(1.0, 0.8, 0.2, 1)
+theme_override_font_sizes/font_size = 14
+text = "||"
+
+[node name="Speed1xBtn" type="Button" parent="TopBar/SpeedContainer"]
+custom_minimum_size = Vector2(28, 26)
+theme_override_colors/font_color = Color(0.3, 0.7, 1.0, 1)
+theme_override_font_sizes/font_size = 13
+text = "1x"
+
+[node name="Speed2xBtn" type="Button" parent="TopBar/SpeedContainer"]
+custom_minimum_size = Vector2(28, 26)
+theme_override_colors/font_color = Color(0.3, 0.7, 1.0, 1)
+theme_override_font_sizes/font_size = 13
+text = "2x"
+
+[node name="Speed5xBtn" type="Button" parent="TopBar/SpeedContainer"]
+custom_minimum_size = Vector2(28, 26)
+theme_override_colors/font_color = Color(0.3, 0.7, 1.0, 1)
+theme_override_font_sizes/font_size = 13
+text = "5x"
+
 [node name="NationLabel" type="Label" parent="TopBar"]
 anchor_right = 1.0
-offset_left = 420.0
+offset_left = 550.0
 offset_top = 8.0
 offset_right = -100.0
 offset_bottom = 35.0

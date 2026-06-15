@@ -10,6 +10,7 @@ const _NationGenerator = preload("res://scripts/map/NationGenerator.gd")
 const _RiverGenerator = preload("res://scripts/map/RiverGenerator.gd")
 const _ResourceGenerator = preload("res://scripts/economy/ResourceGenerator.gd")
 const _EconomySystem = preload("res://scripts/economy/EconomySystem.gd")
+const _MarketSystem = preload("res://scripts/economy/MarketSystem.gd")
 
 signal grid_generated()
 
@@ -563,7 +564,9 @@ class _MapBaseDrawer extends Node2D:
 
 
 func _on_game_tick(_tick: int) -> void:
-	_EconomySystem.process_turn(nations, cells)
+	_EconomySystem.calculate_all(nations, cells)
+	_MarketSystem.process_trade(nations)
+	_EconomySystem.apply_all(nations)
 
 
 func _build_border_cache() -> void:
