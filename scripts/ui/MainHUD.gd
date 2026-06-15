@@ -11,13 +11,20 @@ const ResourceData = preload("res://scripts/economy/ResourceData.gd")
 @onready var _info_title: Label = $InfoPanel/MarginContainer/VBoxContainer/TitleLabel
 @onready var _info_subtitle: Label = $InfoPanel/MarginContainer/VBoxContainer/SubtitleLabel
 @onready var _info_body: Label = $InfoPanel/MarginContainer/VBoxContainer/InfoLabel
+@onready var _resources_btn: Button = $TopBar/ResourcesBtn
+@onready var _resource_ledger: Panel = $ResourceLedger
 
 
 func _ready() -> void:
 	EventBus.hex_clicked.connect(_on_hex_clicked)
 	EventBus.hex_hovered.connect(_on_hex_hovered)
 	EventBus.game_tick.connect(_on_game_tick)
+	_resources_btn.pressed.connect(_toggle_resource_ledger)
 	_info_panel.hide()
+
+
+func _toggle_resource_ledger() -> void:
+	_resource_ledger.visible = not _resource_ledger.visible
 
 
 func _on_game_tick(_tick: int) -> void:
@@ -42,6 +49,9 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 		if _info_panel.visible:
 			_info_panel.hide()
+			get_viewport().set_input_as_handled()
+		if _resource_ledger.visible:
+			_resource_ledger.hide()
 			get_viewport().set_input_as_handled()
 
 
@@ -74,6 +84,8 @@ func _on_hex_clicked(data: Dictionary) -> void:
 		lines.append("Resource: [color=#" + rcolor.to_html(false) + "]" + rname + "[/color] (%d)" % ramount)
 
 	_info_body.text = "\n".join(lines)
+
+	_resource_ledger.hide()
 
 
 func _on_hex_hovered(data: Dictionary) -> void:
