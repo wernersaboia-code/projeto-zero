@@ -19,6 +19,8 @@ var infrastructure: int = 0
 var owner_nation_id: int = -1
 var is_river: bool = false
 var flow_accumulation: int = 0
+var resource_type: int = -1
+var resource_amount: int = 0
 
 
 func get_terrain_name() -> String:

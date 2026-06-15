@@ -130,11 +130,16 @@ static func generate(provinces: Dictionary, grid: Dictionary, _target_nations: i
 		provinces[pid].nation_id = nid
 		nations[nid].population += provinces[pid].population
 
-	# Step 7: assign individual cells to nations (overrides province assignment)
+	# Step 7: assign individual cells to nations
 	for cube in cell_country:
 		if grid.has(cube):
 			var cell = grid[cube]
 			cell.owner_nation_id = cid_to_nid[cell_country[cube]]
+	for pid in assigned:
+		var nid = assigned[pid]
+		for cube in provinces[pid].hexes:
+			if grid.has(cube) and grid[cube].owner_nation_id < 0:
+				grid[cube].owner_nation_id = nid
 
 	for nid in nations:
 		var nation = nations[nid]

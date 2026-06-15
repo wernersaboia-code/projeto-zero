@@ -8,6 +8,9 @@ const _ProvinceGenerator = preload("res://scripts/map/ProvinceGenerator.gd")
 const _NationData = preload("res://scripts/map/NationData.gd")
 const _NationGenerator = preload("res://scripts/map/NationGenerator.gd")
 const _RiverGenerator = preload("res://scripts/map/RiverGenerator.gd")
+const _ResourceGenerator = preload("res://scripts/economy/ResourceGenerator.gd")
+const _ResourceData = preload("res://scripts/economy/ResourceData.gd")
+const _EconomySystem = preload("res://scripts/economy/EconomySystem.gd")
 
 signal grid_generated()
 
@@ -32,6 +35,7 @@ var _heightmap_color: Array = []  # Color per cell (from PNG), empty = use proce
 
 
 func _ready() -> void:
+	add_to_group("hex_grid")
 	seed(42)
 	_setup_heightmap()
 	_setup_moisture_noise()
@@ -41,9 +45,11 @@ func _ready() -> void:
 	_generate_provinces()
 	_generate_nations()
 	_generate_rivers()
+	_generate_resources()
 	_build_border_cache()
 	grid_generated.emit()
 	EventBus.grid_status.emit(cells.size(), provinces.size(), nations.size())
+	EventBus.game_tick.connect(_on_game_tick)
 
 
 func _setup_heightmap() -> void:
@@ -450,15 +456,17 @@ func _generate_provinces() -> void:
 func _generate_nations() -> void:
 	nations = _NationGenerator.generate(provinces, cells, 30)
 
-	for pid in provinces:
-		var prov = provinces[pid]
-		for c in prov.hexes:
-			if cells.has(c):
-				cells[c].owner_nation_id = prov.nation_id
-
 
 func _generate_rivers() -> void:
 	_RiverGenerator.generate(cells)
+
+
+func _generate_resources() -> void:
+	_ResourceGenerator.generate(cells)
+
+
+func _on_game_tick(_tick: int) -> void:
+	_EconomySystem.process_turn(nations, cells)
 
 
 func _build_border_cache() -> void:
@@ -556,6 +564,15 @@ func _draw() -> void:
 	for edge in _river_edge_cache:
 		draw_line(edge[0], edge[1], Color(0.2, 0.5, 0.9, 0.85), edge[2], true)
 
+	for cube in cells:
+		var cell = cells[cube]
+		if cell.resource_type >= 0:
+			var center = _HexUtils.cube_to_pixel(cube, hex_size)
+			var icon = _ResourceData.get_icon(cell.resource_type)
+			var color = _ResourceData.get_color(cell.resource_type)
+			var font_size = 7
+			draw_string(ThemeDB.fallback_font, center + Vector2(-3, 4), icon, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
+
 	if not hover_hex_verts.is_empty():
 		draw_colored_polygon(hover_hex_verts, Color(1, 1, 1, 0.15))
 		draw_polyline(hover_hex_verts, Color.WHITE, 2.0, true)
@@ -601,7 +618,9 @@ func _cell_to_dict(cell) -> Dictionary:
 		"is_passable": cell.is_passable(),
 		"is_water": cell.is_water(),
 		"is_river": cell.is_river,
-		"flow_accumulation": cell.flow_accumulation
+		"flow_accumulation": cell.flow_accumulation,
+		"resource_type": cell.resource_type,
+		"resource_amount": cell.resource_amount
 	}
 
 	if cell.province_id >= 0 and provinces.has(cell.province_id):

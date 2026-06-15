@@ -159,7 +159,9 @@ static func _post_process_coastal(provinces: Dictionary, grid: Dictionary) -> vo
 				var neighbor = _HexUtils.cube_neighbor(c, d)
 				if grid.has(neighbor) and grid[neighbor].is_water():
 					prov.is_coastal = true
-					return
+					break
+			if prov.is_coastal:
+				break
 
 
 static func _merge_small_provinces(provinces: Array, grid: Dictionary, min_size: int) -> void:

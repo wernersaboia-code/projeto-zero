@@ -1,6 +1,8 @@
 extends CanvasLayer
 class_name MainHUD
 
+const ResourceData = preload("res://scripts/economy/ResourceData.gd")
+
 @onready var _top_bar: Panel = $TopBar
 @onready var _nation_label: Label = $TopBar/NationLabel
 @onready var _treasury_label: Label = $TopBar/TreasuryLabel
@@ -14,7 +16,26 @@ class_name MainHUD
 func _ready() -> void:
 	EventBus.hex_clicked.connect(_on_hex_clicked)
 	EventBus.hex_hovered.connect(_on_hex_hovered)
+	EventBus.game_tick.connect(_on_game_tick)
 	_info_panel.hide()
+
+
+func _on_game_tick(_tick: int) -> void:
+	var hex_grid = get_tree().get_first_node_in_group("hex_grid") as HexGrid
+	if not hex_grid or hex_grid.nations.is_empty():
+		return
+	# Update treasury display for player nation (first nation for now)
+	var nation = hex_grid.nations.values()[0]
+	_treasury_label.text = "$ %,.0f" % nation.treasury
+
+	var parts: Array[String] = []
+	for res_type in range(ResourceData.Type.MILITARY_GOODS + 1):
+		var bal = nation.get_resource_balance(res_type)
+		if bal != 0.0:
+			var icon = ResourceData.get_icon(res_type)
+			parts.append("%s%+.1f" % [icon, bal])
+	if not parts.is_empty():
+		_treasury_label.text += "  |  " + " ".join(parts)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -45,6 +66,13 @@ func _on_hex_clicked(data: Dictionary) -> void:
 	if nname != "":
 		lines.append("Nation: %s" % nname)
 
+	var rtype = data.get("resource_type", -1)
+	if rtype >= 0:
+		var ramount = data.get("resource_amount", 0)
+		var rname = ResourceData.get_name(rtype)
+		var rcolor = ResourceData.get_color(rtype)
+		lines.append("Resource: [color=#" + rcolor.to_html(false) + "]" + rname + "[/color] (%d)" % ramount)
+
 	_info_body.text = "\n".join(lines)
 
 
@@ -61,5 +89,10 @@ func _on_hex_hovered(data: Dictionary) -> void:
 		var nname = data.get("nation_name", "")
 		if nname != "":
 			lines.append(nname)
+
+		var rtype = data.get("resource_type", -1)
+		if rtype >= 0:
+			var ramount = data.get("resource_amount", 0)
+			lines.append(ResourceData.get_icon(rtype) + " " + ResourceData.get_name(rtype))
 
 		_info_subtitle.text = " | ".join(lines)

@@ -20,8 +20,8 @@ const VERTEX_FLAT_TOP = [
 
 
 static func cube_to_offset(cube: Vector3) -> Vector2i:
-	var col = cube.x + (cube.z - int(cube.z < 0)) / 2
-	var row = cube.z
+	var col = int(cube.x) + (int(cube.z) - (1 if cube.z < 0 else 0)) / 2
+	var row = int(cube.z)
 	return Vector2i(col, row)
 
 
