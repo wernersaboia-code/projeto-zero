@@ -2,6 +2,14 @@ extends RefCounted
 
 const R = preload("res://scripts/economy/ResourceData.gd")
 
+const MAX_ITERATIONS: int = 10
+const PROCESSING_ORDER: Array[int] = [
+	R.Type.ELECTRIC_POWER,
+	R.Type.INDUSTRY_GOODS,
+	R.Type.CONSUMER_GOODS,
+	R.Type.MILITARY_GOODS,
+]
+
 
 static func process_turn(nations: Dictionary, cells: Dictionary) -> void:
 	for nid in nations:
@@ -22,57 +30,79 @@ static func _process_nation_turn(nation, cells: Dictionary) -> void:
 			var prod = float(cell.resource_amount) * 0.1
 			nation.resource_production[cell.resource_type] = nation.resource_production.get(cell.resource_type, 0.0) + prod
 
-	# Step 2: process production chains (Electric Power → Consumer/Industry/Military Goods)
-	var processing_order = [R.Type.ELECTRIC_POWER, R.Type.INDUSTRY_GOODS, R.Type.CONSUMER_GOODS, R.Type.MILITARY_GOODS]
-	for res_type in processing_order:
-		var recipe = R.get_recipe(res_type)
-		if recipe.is_empty():
-			continue
+	# Step 2: multi-pass processed goods production
+	# available pool = stockpile + raw extraction + processed production (updated each pass)
+	var available: Dictionary = nation.resources.duplicate()
+	for res_type in nation.resource_production:
+		available[res_type] = available.get(res_type, 0.0) + nation.resource_production[res_type]
 
-		var max_production = INF
-		for input_res in recipe:
-			var needed_per_unit = recipe[input_res]
-			var available = nation.resources.get(input_res, 0.0) + nation.resource_production.get(input_res, 0.0)
-			var possible = available / needed_per_unit if needed_per_unit > 0 else INF
-			if possible < max_production:
-				max_production = possible
+	var consumed_processing: Dictionary = {}
+	var produced_processed: Dictionary = {}
 
-		max_production = floor(max_production)
-		if max_production <= 0:
-			continue
+	for iter in range(MAX_ITERATIONS):
+		var any_produced = false
 
-		for input_res in recipe:
-			var total_needed = recipe[input_res] * max_production
-			var from_stockpile = min(total_needed, nation.resources.get(input_res, 0.0))
-			var from_current_prod = total_needed - from_stockpile
-			if from_current_prod > 0:
-				var avail_prod = nation.resource_production.get(input_res, 0.0)
-				var actual_from_prod = min(from_current_prod, avail_prod)
-				nation.resource_production[input_res] = avail_prod - actual_from_prod
-				from_stockpile = total_needed - actual_from_prod
-			nation.resources[input_res] = nation.resources.get(input_res, 0.0) - from_stockpile
-			nation.resource_consumption[input_res] = nation.resource_consumption.get(input_res, 0.0) + total_needed
+		for res_type in PROCESSING_ORDER:
+			var recipe = R.get_recipe(res_type)
+			if recipe.is_empty():
+				continue
 
-		nation.resource_production[res_type] = nation.resource_production.get(res_type, 0.0) + max_production
+			var max_units = INF
+			for input_res in recipe:
+				var needed_per_unit = recipe[input_res]
+				var pool = available.get(input_res, 0.0) - consumed_processing.get(input_res, 0.0)
+				var possible = pool / needed_per_unit if needed_per_unit > 0 else INF
+				if possible < max_units:
+					max_units = possible
 
-	# Step 3: population consumption
+			max_units = floor(max_units)
+			if max_units <= 0:
+				continue
+
+			any_produced = true
+			for input_res in recipe:
+				var total_needed = recipe[input_res] * max_units
+				consumed_processing[input_res] = consumed_processing.get(input_res, 0.0) + total_needed
+			produced_processed[res_type] = produced_processed.get(res_type, 0.0) + max_units
+			available[res_type] = available.get(res_type, 0.0) + max_units
+
+		if not any_produced:
+			break
+
+	# Step 3: population consumption from remaining available pool
 	var pop = max(1, nation.population)
-	var food_need = pop * 0.001
-	var power_need = pop * 0.0005
-	var goods_need = pop * 0.0001
+	var pop_consumed: Dictionary = {}
 
-	_consume(nation, R.Type.AGRICULTURE, food_need)
-	_consume(nation, R.Type.ELECTRIC_POWER, power_need)
-	_consume(nation, R.Type.CONSUMER_GOODS, goods_need)
+	pop_consumed[R.Type.AGRICULTURE] = min(
+		pop * 0.001,
+		max(0, available.get(R.Type.AGRICULTURE, 0.0) - consumed_processing.get(R.Type.AGRICULTURE, 0.0)))
+	pop_consumed[R.Type.ELECTRIC_POWER] = min(
+		pop * 0.0005,
+		max(0, available.get(R.Type.ELECTRIC_POWER, 0.0) - consumed_processing.get(R.Type.ELECTRIC_POWER, 0.0)))
+	pop_consumed[R.Type.CONSUMER_GOODS] = min(
+		pop * 0.0001,
+		max(0, available.get(R.Type.CONSUMER_GOODS, 0.0) - consumed_processing.get(R.Type.CONSUMER_GOODS, 0.0)))
 
-	# Step 4: update stockpiles
+	# Step 4: record final production and consumption
+	for res_type in produced_processed:
+		nation.resource_production[res_type] = nation.resource_production.get(res_type, 0.0) + produced_processed[res_type]
+
+	var total_consumed: Dictionary = {}
+	for res_type in consumed_processing:
+		total_consumed[res_type] = total_consumed.get(res_type, 0.0) + consumed_processing[res_type]
+	for res_type in pop_consumed:
+		total_consumed[res_type] = total_consumed.get(res_type, 0.0) + pop_consumed[res_type]
+	for res_type in total_consumed:
+		nation.resource_consumption[res_type] = nation.resource_consumption.get(res_type, 0.0) + total_consumed[res_type]
+
+	# Step 5: update stockpiles
 	for res_type in range(R.Type.MILITARY_GOODS + 1):
 		var prod = nation.resource_production.get(res_type, 0.0)
 		var cons = nation.resource_consumption.get(res_type, 0.0)
 		var current = nation.resources.get(res_type, 0.0)
 		nation.resources[res_type] = max(0, current + prod - cons)
 
-	# Step 5: treasury (GDP based on total raw + processed production)
+	# Step 6: treasury
 	var total_prod_value = 0.0
 	for res_type in nation.resource_production:
 		var value_per_unit = 10.0
@@ -84,19 +114,3 @@ static func _process_nation_turn(nation, cells: Dictionary) -> void:
 
 	nation.gdp = total_prod_value
 	nation.treasury += total_prod_value * 0.3
-
-
-static func _consume(nation, res_type: int, amount: float) -> void:
-	if amount <= 0:
-		return
-	var stock = nation.resources.get(res_type, 0.0)
-	var prod = nation.resource_production.get(res_type, 0.0)
-	var total_available = stock + prod
-	var consumed = min(amount, total_available)
-
-	var from_prod = min(consumed, prod)
-	var from_stock = consumed - from_prod
-
-	nation.resources[res_type] = stock - from_stock
-	nation.resource_production[res_type] = prod - from_prod
-	nation.resource_consumption[res_type] = nation.resource_consumption.get(res_type, 0.0) + consumed

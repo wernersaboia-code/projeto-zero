@@ -13,7 +13,7 @@ func _ready() -> void:
 	_build_ui()
 
 	# Find player nation via hex grid
-	var hex_grid = get_tree().get_first_node_in_group("hex_grid") as HexGrid
+	var hex_grid = get_tree().get_first_node_in_group("hex_grid")
 	if hex_grid and not hex_grid.nations.is_empty():
 		_nation = hex_grid.nations.values()[0]
 
@@ -87,7 +87,7 @@ func _build_ui() -> void:
 
 func _on_game_tick(_tick: int) -> void:
 	if not _nation:
-		var hex_grid = get_tree().get_first_node_in_group("hex_grid") as HexGrid
+		var hex_grid = get_tree().get_first_node_in_group("hex_grid")
 		if hex_grid and not hex_grid.nations.is_empty():
 			_nation = hex_grid.nations.values()[0]
 		else:

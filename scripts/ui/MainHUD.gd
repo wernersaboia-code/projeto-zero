@@ -28,7 +28,7 @@ func _toggle_resource_ledger() -> void:
 
 
 func _on_game_tick(_tick: int) -> void:
-	var hex_grid = get_tree().get_first_node_in_group("hex_grid") as HexGrid
+	var hex_grid = get_tree().get_first_node_in_group("hex_grid")
 	if not hex_grid or hex_grid.nations.is_empty():
 		return
 	# Update treasury display for player nation (first nation for now)
