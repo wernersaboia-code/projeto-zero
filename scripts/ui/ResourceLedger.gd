@@ -1,7 +1,7 @@
 extends Panel
 class_name ResourceLedger
 
-const ResourceData = preload("res://scripts/economy/ResourceData.gd")
+const R = preload("res://scripts/economy/ResourceData.gd")
 
 var _nation = null
 var _header_labels: Array = []
@@ -9,13 +9,14 @@ var _rows: Dictionary = {}  # res_type -> Array[Label]
 
 
 func _ready() -> void:
+	add_to_group("resource_ledger")
 	EventBus.game_tick.connect(_on_game_tick)
 	_build_ui()
 
-	# Find player nation via hex grid
-	var hex_grid = get_tree().get_first_node_in_group("hex_grid")
-	if hex_grid and not hex_grid.nations.is_empty():
-		_nation = hex_grid.nations.values()[0]
+
+func set_player_nation(nation) -> void:
+	_nation = nation
+	_update_display()
 
 
 func _build_ui() -> void:
@@ -56,19 +57,19 @@ func _build_ui() -> void:
 		header.add_child(lbl)
 
 	# Resource rows
-	for res_type in range(ResourceData.Type.MILITARY_GOODS + 1):
+	for res_type in range(R.Type.MILITARY_GOODS + 1):
 		var row = HBoxContainer.new()
 		row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		vb.add_child(row)
 
 		var icon_lbl = Label.new()
-		icon_lbl.text = ResourceData.get_icon(res_type)
-		icon_lbl.add_theme_color_override("font_color", ResourceData.get_color(res_type))
+		icon_lbl.text = R.get_icon(res_type)
+		icon_lbl.add_theme_color_override("font_color", R.get_color(res_type))
 		icon_lbl.custom_minimum_size = Vector2(20, 20)
 		row.add_child(icon_lbl)
 
 		var name_lbl = Label.new()
-		name_lbl.text = ResourceData.get_name(res_type)
+		name_lbl.text = R.res_name(res_type)
 		name_lbl.custom_minimum_size = Vector2(130, 20)
 		row.add_child(name_lbl)
 
@@ -87,18 +88,14 @@ func _build_ui() -> void:
 
 func _on_game_tick(_tick: int) -> void:
 	if not _nation:
-		var hex_grid = get_tree().get_first_node_in_group("hex_grid")
-		if hex_grid and not hex_grid.nations.is_empty():
-			_nation = hex_grid.nations.values()[0]
-		else:
-			return
+		return
 	_update_display()
 
 
 func _update_display() -> void:
 	if not _nation:
 		return
-	for res_type in range(ResourceData.Type.MILITARY_GOODS + 1):
+	for res_type in range(R.Type.MILITARY_GOODS + 1):
 		if not _rows.has(res_type):
 			continue
 		var labels = _rows[res_type]

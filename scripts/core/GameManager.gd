@@ -1,6 +1,7 @@
 extends Node
 
 var current_tick: int = 0
+var player_nation_id: int = -1
 var is_paused: bool = false
 var game_speed: float = 1.0
 

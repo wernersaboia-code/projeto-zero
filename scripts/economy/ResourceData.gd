@@ -88,7 +88,7 @@ const RECIPES: Dictionary = {
 static func is_raw(resource_type: int) -> bool:
 	return CATEGORIES.get(resource_type, "raw") == "raw"
 
-static func get_name(resource_type: int) -> String:
+static func res_name(resource_type: int) -> String:
 	return NAMES.get(resource_type, "Unknown")
 
 static func get_color(resource_type: int) -> Color:

@@ -9,7 +9,6 @@ const _NationData = preload("res://scripts/map/NationData.gd")
 const _NationGenerator = preload("res://scripts/map/NationGenerator.gd")
 const _RiverGenerator = preload("res://scripts/map/RiverGenerator.gd")
 const _ResourceGenerator = preload("res://scripts/economy/ResourceGenerator.gd")
-const _ResourceData = preload("res://scripts/economy/ResourceData.gd")
 const _EconomySystem = preload("res://scripts/economy/EconomySystem.gd")
 
 signal grid_generated()
@@ -22,7 +21,10 @@ var grid_width: int = 320
 var grid_height: int = 200
 var hex_size: float = 10.0
 
-var show_political_mode: bool = true
+var show_political_mode: bool = true:
+	set(v):
+		show_political_mode = v
+		_refresh_map_base()
 
 var terrain_colors: Dictionary = {}
 var _noise_moisture: FastNoiseLite
@@ -32,6 +34,9 @@ var _nation_border_cache: Array = []
 var _province_border_cache: Array = []
 var _river_edge_cache: Array = []
 var _heightmap_color: Array = []  # Color per cell (from PNG), empty = use procedural colors
+
+var _map_base: Node2D  # child that draws expensive hex fills (redrawn only on data change)
+
 
 
 func _ready() -> void:
@@ -47,9 +52,43 @@ func _ready() -> void:
 	_generate_rivers()
 	_generate_resources()
 	_build_border_cache()
+	EventBus.game_tick.connect(_on_game_tick)
+
+	_setup_map_base()
 	grid_generated.emit()
 	EventBus.grid_status.emit(cells.size(), provinces.size(), nations.size())
-	EventBus.game_tick.connect(_on_game_tick)
+
+	# Show nation selection screen
+	_show_nation_select()
+
+
+func _show_nation_select() -> void:
+	if nations.is_empty():
+		return
+	var gm = get_tree().root.get_node("GameManager")
+	if gm:
+		gm.is_paused = true
+	var select_scene = preload("res://scenes/ui/NationSelectScreen.tscn")
+	var select = select_scene.instantiate()
+	select.set_nations(nations)
+	select.tree_exited.connect(_on_select_closed)
+	add_child(select)
+
+
+func _on_select_closed() -> void:
+	var gm = get_tree().root.get_node("GameManager")
+	if gm and gm.player_nation_id >= 0:
+		gm.is_paused = false
+		# Update HUD with player nation
+		var nation = nations.get(gm.player_nation_id)
+		if not nation:
+			return
+		var hud = get_tree().get_first_node_in_group("hud")
+		if hud and hud.has_method("set_player_nation"):
+			hud.set_player_nation(gm.player_nation_id)
+		var ledger = get_tree().get_first_node_in_group("resource_ledger")
+		if ledger and ledger.has_method("set_player_nation"):
+			ledger.set_player_nation(nation)
 
 
 func _setup_heightmap() -> void:
@@ -465,6 +504,64 @@ func _generate_resources() -> void:
 	_ResourceGenerator.generate(cells)
 
 
+func _setup_map_base() -> void:
+	_map_base = _MapBaseDrawer.new()
+	_map_base.name = "MapBase"
+	_map_base.hex_grid = self
+	add_child(_map_base)
+	_map_base.queue_redraw()
+
+
+func _refresh_map_base() -> void:
+	if _map_base:
+		_map_base.queue_redraw()
+
+
+# Helper class that draws the expensive hex base to its own canvas
+class _MapBaseDrawer extends Node2D:
+	var hex_grid: HexGrid
+	const _Utils = preload("res://scripts/map/HexUtils.gd")
+	const _R = preload("res://scripts/economy/ResourceData.gd")
+
+	func _draw() -> void:
+		if not hex_grid:
+			return
+		var cells = hex_grid.cells
+		var utils = _Utils
+		var hsize = hex_grid.hex_size
+		var hmap_color = hex_grid._heightmap_color
+		var colors = hex_grid.terrain_colors
+		var gwidth = hex_grid.grid_width
+		var pol = hex_grid.show_political_mode
+		var nations = hex_grid.nations
+
+		for cube in cells:
+			var cell = cells[cube]
+			var center = utils.cube_to_pixel(cube, hsize)
+			var verts = utils.hex_vertices(center, hsize)
+
+			var final_color: Color
+			if hmap_color.size() > 0:
+				var idx = cell.offset_coords.x + cell.offset_coords.y * gwidth
+				final_color = hmap_color[idx] if idx < hmap_color.size() else Color.GRAY
+			else:
+				final_color = colors.get(cell.terrain, Color.GRAY)
+
+			if pol and cell.owner_nation_id >= 0 and nations.has(cell.owner_nation_id):
+				final_color = final_color.lerp(nations[cell.owner_nation_id].color, 0.15)
+
+			draw_colored_polygon(verts, final_color)
+
+		# Resource icons
+		for cube in cells:
+			var cell = cells[cube]
+			if cell.resource_type >= 0:
+				var center = utils.cube_to_pixel(cube, hsize)
+				var icon = _R.get_icon(cell.resource_type)
+				var color = _R.get_color(cell.resource_type)
+				draw_string(ThemeDB.fallback_font, center + Vector2(-3, 4), icon, HORIZONTAL_ALIGNMENT_LEFT, -1, 7, color)
+
+
 func _on_game_tick(_tick: int) -> void:
 	_EconomySystem.process_turn(nations, cells)
 
@@ -525,28 +622,12 @@ static func _cube_to_key(c: Vector3) -> int:
 
 
 func _draw() -> void:
-	var hover_hex_verts: PackedVector2Array
+	var hover_verts: PackedVector2Array
+	var hover_cube: Vector3 = _hovered_cell
 
-	for cube in cells:
-		var cell = cells[cube]
-		var center = _HexUtils.cube_to_pixel(cube, hex_size)
-		var verts = _HexUtils.hex_vertices(center, hex_size)
-
-		var final_color: Color
-		if _heightmap_color.size() > 0:
-			var idx = cell.offset_coords.x + cell.offset_coords.y * grid_width
-			final_color = _heightmap_color[idx] if idx < _heightmap_color.size() else Color.GRAY
-		else:
-			final_color = terrain_colors.get(cell.terrain, Color.GRAY)
-
-		if show_political_mode and cell.owner_nation_id >= 0 and nations.has(cell.owner_nation_id):
-			var nation_color = nations[cell.owner_nation_id].color
-			final_color = final_color.lerp(nation_color, 0.15)
-
-		draw_colored_polygon(verts, final_color)
-
-		if cube == _hovered_cell:
-			hover_hex_verts = verts
+	if cells.has(hover_cube):
+		var center = _HexUtils.cube_to_pixel(hover_cube, hex_size)
+		hover_verts = _HexUtils.hex_vertices(center, hex_size)
 
 	for border in _province_border_cache:
 		draw_line(border[0], border[1], Color(0.4, 0.4, 0.4, 0.4), 0.8, true)
@@ -564,18 +645,9 @@ func _draw() -> void:
 	for edge in _river_edge_cache:
 		draw_line(edge[0], edge[1], Color(0.2, 0.5, 0.9, 0.85), edge[2], true)
 
-	for cube in cells:
-		var cell = cells[cube]
-		if cell.resource_type >= 0:
-			var center = _HexUtils.cube_to_pixel(cube, hex_size)
-			var icon = _ResourceData.get_icon(cell.resource_type)
-			var color = _ResourceData.get_color(cell.resource_type)
-			var font_size = 7
-			draw_string(ThemeDB.fallback_font, center + Vector2(-3, 4), icon, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
-
-	if not hover_hex_verts.is_empty():
-		draw_colored_polygon(hover_hex_verts, Color(1, 1, 1, 0.15))
-		draw_polyline(hover_hex_verts, Color.WHITE, 2.0, true)
+	if not hover_verts.is_empty():
+		draw_colored_polygon(hover_verts, Color(1, 1, 1, 0.15))
+		draw_polyline(hover_verts, Color.WHITE, 2.0, true)
 
 
 func _process(_delta: float) -> void:
