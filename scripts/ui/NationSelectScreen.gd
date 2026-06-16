@@ -16,6 +16,7 @@ func set_nations(nations: Dictionary) -> void:
 
 
 func _build_ui() -> void:
+	layer = 10
 	var panel = Panel.new()
 	panel.set_anchors_preset(Control.PRESET_FULL_RECT)
 	panel.add_theme_stylebox_override("panel", _make_style(Color(0.04, 0.04, 0.08, 0.97)))
@@ -41,7 +42,7 @@ func _build_ui() -> void:
 	vb.add_child(title)
 
 	var subtitle = Label.new()
-	subtitle.text = "Click a nation to begin"
+	subtitle.text = "Click a nation or press SPACE for Quick Start (first nation)"
 	subtitle.add_theme_font_size_override("font_size", 14)
 	subtitle.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
 	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -122,6 +123,17 @@ func _populate_list(filter: String = "") -> void:
 		hb.add_child(btn)
 
 		_row_nodes[nation.id] = btn
+
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and event.keycode == KEY_SPACE:
+		# Quick Start: select the first nation in the list
+		var sorted = _nations.values()
+		if sorted.is_empty():
+			return
+		sorted.sort_custom(func(a, b): return a.name < b.name)
+		_on_nation_selected(sorted[0].id)
+		get_viewport().set_input_as_handled()
 
 
 func _on_filter_changed(new_text: String) -> void:

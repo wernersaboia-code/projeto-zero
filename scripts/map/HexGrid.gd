@@ -80,7 +80,23 @@ func _on_select_closed() -> void:
 	var gm = get_tree().root.get_node("GameManager")
 	if gm and gm.player_nation_id >= 0:
 		gm.is_paused = false
-		# Update HUD with player nation
+		var nation = nations.get(gm.player_nation_id)
+		if not nation:
+			return
+		var hud = get_tree().get_first_node_in_group("hud")
+		if hud and hud.has_method("set_player_nation"):
+			hud.set_player_nation(gm.player_nation_id)
+		var ledger = get_tree().get_first_node_in_group("resource_ledger")
+		if ledger and ledger.has_method("set_player_nation"):
+			ledger.set_player_nation(nation)
+	elif gm:
+		# Fallback: auto-select first nation if selection was skipped
+		if nations.is_empty():
+			return
+		var sorted = nations.values()
+		sorted.sort_custom(func(a, b): return a.name < b.name)
+		gm.player_nation_id = sorted[0].id
+		gm.is_paused = false
 		var nation = nations.get(gm.player_nation_id)
 		if not nation:
 			return
@@ -518,7 +534,7 @@ func _refresh_map_base() -> void:
 		_map_base.queue_redraw()
 
 
-# Helper class that draws the expensive hex base to its own canvas
+# Helper class that draws the expensive hex base to its own canvas.
 class _MapBaseDrawer extends Node2D:
 	var hex_grid: HexGrid
 	const _Utils = preload("res://scripts/map/HexUtils.gd")
@@ -553,7 +569,6 @@ class _MapBaseDrawer extends Node2D:
 
 			draw_colored_polygon(verts, final_color)
 
-		# Resource icons
 		for cube in cells:
 			var cell = cells[cube]
 			if cell.resource_type >= 0:
