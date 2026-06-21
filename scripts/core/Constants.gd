@@ -1,5 +1,9 @@
 extends Node
 
+# Grid dimensions (doubled from 320x200 for more geographic detail)
+const GRID_WIDTH = 640
+const GRID_HEIGHT = 400
+
 # Terrain types (indexed by palette in terrain.bmp)
 # Source: terrain.txt (Strategic Command / Making History palette)
 const OCEAN = 0
@@ -15,6 +19,23 @@ const MARSH = 9
 const URBAN = 10
 const ARCTIC = 11
 const TUNDRA = 12
+
+# Population density per terrain type (population units per hex, where 1 unit = 1000 people)
+const POPULATION_DENSITY: Dictionary = {
+	OCEAN: 0,
+	SHALLOW_WATER: 0,
+	PLAINS: [20, 60],
+	FOREST: [8, 25],
+	WOODS: [5, 18],
+	HILLS: [5, 15],
+	MOUNTAINS: [1, 4],
+	DESERT: [0, 3],
+	JUNGLE: [2, 8],
+	MARSH: [1, 3],
+	URBAN: [150, 600],
+	ARCTIC: [0, 1],
+	TUNDRA: [0, 2],
+}
 
 # Legacy aliases (for backward compatibility with existing code)
 const DEEP_WATER = OCEAN

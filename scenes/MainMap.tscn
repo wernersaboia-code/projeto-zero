@@ -9,7 +9,7 @@
 
 [node name="Camera2D" type="Camera2D" parent="."]
 script = ExtResource("1_cam")
-position = Vector2(1650, 2650)
+position = Vector2(6720, 4850)
 
 [node name="HexGrid" type="Node2D" parent="."]
 script = ExtResource("2_grid")

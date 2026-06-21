@@ -8,6 +8,9 @@ var capital_province_id: int = -1
 var government_type: String = "democracy"
 var is_player: bool = false
 
+# Diplomacy: nation_id -> relation value (-1.0 hostile, 0.0 tense, 0.5 neutral, 1.0 allied)
+var diplomacy: Dictionary = {}
+
 # Economic stats
 var treasury: float = 10000.0
 var gdp: float = 0.0

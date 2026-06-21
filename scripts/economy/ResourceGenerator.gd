@@ -87,7 +87,7 @@ static func generate(cells: Dictionary) -> void:
 			continue
 
 		# Latitude adjustment for rubber (equatorial only)
-		var ny = float(cell.offset_coords.y) / 200.0
+		var ny = float(cell.offset_coords.y) / float(Constants.GRID_HEIGHT)
 		var lat_factor = abs(ny - 0.5) * 2.0
 
 		var roll = rng.randf()

@@ -4,8 +4,8 @@ $jsonDir = "C:\Users\werne\ProjetoZero\assets\data"
 $regionsPath = Join-Path $jsonDir "sr2030_regions.json"
 $geoPath = Join-Path $jsonDir "sr2030_geo_match.json"
 
-$gridW = 320
-$gridH = 200
+$gridW = 640
+$gridH = 400
 
 $countryBounds = @{
     "USA" = @{LatMin=24.4; LatMax=49.4; LonMin=-125.0; LonMax=-66.9}

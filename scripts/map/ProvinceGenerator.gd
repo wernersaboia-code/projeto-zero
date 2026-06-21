@@ -3,7 +3,7 @@ extends RefCounted
 const _HexUtils = preload("res://scripts/map/HexUtils.gd")
 const _ProvinceData = preload("res://scripts/map/ProvinceData.gd")
 
-static func generate(grid: Dictionary, grid_width: int, grid_height: int) -> Dictionary:
+static func generate(grid: Dictionary, grid_width: int, grid_height: int, province_map: Array = []) -> Dictionary:
 	var provinces: Dictionary = {}
 	var next_id: int = 0
 	var assigned: Dictionary = {}
@@ -24,7 +24,7 @@ static func generate(grid: Dictionary, grid_width: int, grid_height: int) -> Dic
 		provinces[next_id] = prov
 		next_id += 1
 
-	var land_provinces = _generate_land_provinces(grid, grid_width, grid_height, assigned)
+	var land_provinces = _generate_land_provinces(grid, grid_width, grid_height, assigned, province_map)
 	for prov in land_provinces:
 		prov.id = next_id
 		for c in prov.hexes:
@@ -35,6 +35,7 @@ static func generate(grid: Dictionary, grid_width: int, grid_height: int) -> Dic
 		next_id += 1
 
 	_post_process_coastal(provinces, grid)
+	_compute_population(provinces, grid)
 	return provinces
 
 
@@ -66,11 +67,9 @@ static func _find_contiguous_water_regions(grid: Dictionary, assigned: Dictionar
 	return regions
 
 
-static func _generate_land_provinces(grid: Dictionary, grid_width: int, grid_height: int, assigned: Dictionary) -> Array:
-	var step = 4
-	# 320×200 grid → step 4 gives ~4000 seeds → ~1500 provinces after filtering
+static func _generate_land_provinces(grid: Dictionary, grid_width: int, grid_height: int, assigned: Dictionary, province_map: Array = []) -> Array:
 	var seeds: Array[Vector3] = []
-
+	var step = 4
 	for col in range(0, grid_width, step):
 		for row in range(0, grid_height, step):
 			var cube = _HexUtils.offset_to_cube(Vector2i(col, row))
@@ -164,6 +163,16 @@ static func _post_process_coastal(provinces: Dictionary, grid: Dictionary) -> vo
 				break
 
 
+static func _compute_population(provinces: Dictionary, grid: Dictionary) -> void:
+	for pid in provinces:
+		var prov = provinces[pid]
+		var total = 0
+		for c in prov.hexes:
+			if grid.has(c):
+				total += grid[c].population
+		prov.population = total
+
+
 static func _merge_small_provinces(provinces: Array, grid: Dictionary, min_size: int) -> void:
 	# Build hex -> province index once; update incrementally on merge.
 	# Dead provinces are marked and compacted at the end (avoids index shifting
@@ -208,7 +217,9 @@ static func _merge_small_provinces(provinces: Array, grid: Dictionary, min_size:
 					grid[c].province_id = provinces[best_idx].id
 					hex_to_idx[c] = best_idx
 				provinces[best_idx].hexes.append_array(provinces[i].hexes)
+				provinces[best_idx].population += provinces[i].population
 				provinces[i].hexes.clear()
+				provinces[i].population = 0
 				dead[i] = true
 				changed = true
 

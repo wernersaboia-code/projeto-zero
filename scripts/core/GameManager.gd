@@ -9,8 +9,18 @@ var game_year: int = 2025
 var game_month: int = 1
 var game_day: int = 1
 
+const _SaveSystem = preload("res://scripts/core/SaveSystem.gd")
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+
+func _exit_tree() -> void:
+	_autosave()
+
+func _autosave() -> void:
+	var hg = get_node_or_null("/root/HexGrid")
+	if hg and hg.nations.size() > 0:
+		_SaveSystem.save_game(0, self, hg)
 
 func _process(delta: float) -> void:
 	if is_paused:

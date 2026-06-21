@@ -8,9 +8,11 @@ const _ProvinceGenerator = preload("res://scripts/map/ProvinceGenerator.gd")
 const _NationData = preload("res://scripts/map/NationData.gd")
 const _NationGenerator = preload("res://scripts/map/NationGenerator.gd")
 const _RiverGenerator = preload("res://scripts/map/RiverGenerator.gd")
+const _SR2030Loader = preload("res://scripts/map/SR2030Loader.gd")
 const _ResourceGenerator = preload("res://scripts/economy/ResourceGenerator.gd")
 const _EconomySystem = preload("res://scripts/economy/EconomySystem.gd")
 const _MarketSystem = preload("res://scripts/economy/MarketSystem.gd")
+const _DiplomacySystem = preload("res://scripts/diplomacy/DiplomacySystem.gd")
 
 signal grid_generated()
 
@@ -18,9 +20,9 @@ var cells: Dictionary = {}
 var provinces: Dictionary = {}
 var nations: Dictionary = {}
 
-var grid_width: int = 320
-var grid_height: int = 200
-var hex_size: float = 10.0
+var grid_width: int = Constants.GRID_WIDTH
+var grid_height: int = Constants.GRID_HEIGHT
+var hex_size: float = 14.0
 
 var show_political_mode: bool = true:
 	set(v):
@@ -31,6 +33,7 @@ var terrain_colors: Dictionary = {}
 var _noise_moisture: FastNoiseLite
 var _heightmap: Array = []
 var _terrain_map: Array = []  # terrain type per cell (from terrain.bmp)
+var _province_map: Array = []  # province color index per cell (from provinces.bmp), -1 if unavailable
 var _hovered_cell: Vector3 = Vector3(99999, 99999, 99999)
 var _nation_border_cache: Dictionary = {}  # nid -> PackedVector2Array of segment pairs
 var _province_border_cache: PackedVector2Array = PackedVector2Array()  # flat segment pairs
@@ -51,6 +54,8 @@ func _ready() -> void:
 	_print_terrain_stats()
 	_generate_provinces()
 	_generate_nations()
+	_generate_diplomacy()
+	_print_population_stats()
 	_generate_rivers()
 	_generate_resources()
 	_build_border_cache()
@@ -129,11 +134,15 @@ func _setup_heightmap() -> void:
 	var elev_path = "res://assets/data/maps/earth_heightmap.png"
 	if FileAccess.file_exists(elev_path):
 		var e_img = Image.new()
-		var e_err = e_img.load(elev_path)
-		if e_err == OK:
-			if e_img.get_width() != grid_width or e_img.get_height() != grid_height:
-				e_img.resize(grid_width, grid_height, Image.INTERPOLATE_LANCZOS)
-			elev_img = e_img
+		var e_file = FileAccess.open(elev_path, FileAccess.READ)
+		if e_file:
+			var e_buf = e_file.get_buffer(e_file.get_length())
+			e_file.close()
+			var e_err = e_img.load_png_from_buffer(e_buf)
+			if e_err == OK:
+				if e_img.get_width() != grid_width or e_img.get_height() != grid_height:
+					e_img.resize(grid_width, grid_height, Image.INTERPOLATE_LANCZOS)
+				elev_img = e_img
 
 	if has_terrain_bmp:
 		_setup_from_terrain_bmp(terrain_bmp_path, elev_img)
@@ -142,6 +151,9 @@ func _setup_heightmap() -> void:
 
 	# Build land mask from terrain types for distance-based elevation
 	_build_land_mask_and_elevation(elev_img)
+
+	# Load province boundaries from provinces.bmp
+	_load_province_map()
 
 
 func _setup_from_terrain_bmp(path: String, elev_img: Image) -> void:
@@ -188,6 +200,58 @@ func _setup_from_terrain_bmp(path: String, elev_img: Image) -> void:
 		for c in grid_width:
 			for r in grid_height:
 				_heightmap_color[c + r * grid_width] = elev_img.get_pixel(c, r)
+
+
+func _load_province_map() -> void:
+	var prov_path = "res://assets/data/maps/provinces.bmp"
+	if not FileAccess.file_exists(prov_path):
+		return
+
+	_province_map.resize(grid_width * grid_height)
+	_province_map.fill(-1)
+
+	var img = Image.new()
+	var err = img.load(prov_path)
+	if err != OK:
+		push_warning("Failed to load provinces.bmp")
+		return
+
+	var src_w = img.get_width()
+	var src_h = img.get_height()
+	var data = img.get_data()
+	var fmt = img.get_format()
+	var bpp = 4 if fmt == Image.FORMAT_RGBA8 else 3
+	var src_pitch = src_w * bpp
+
+	var color_to_id: Dictionary = {}
+	var next_id = 0
+	var matched = 0
+
+	var h_factor = float(src_h) / float(grid_height)
+	var w_factor = float(src_w) / float(grid_width)
+
+	for row in grid_height:
+		var sy = int(float(row) * h_factor)
+		if sy >= src_h:
+			sy = src_h - 1
+		var src_row_start = sy * src_pitch
+		var row_base = row * grid_width
+		for col in grid_width:
+			var sx = int(float(col) * w_factor)
+			if sx >= src_w:
+				sx = src_w - 1
+			var src_idx = src_row_start + sx * bpp
+			var key = int(data[src_idx]) << 16 | int(data[src_idx + 1]) << 8 | int(data[src_idx + 2])
+			var cid = color_to_id.get(key)
+			if cid == null:
+				cid = next_id
+				color_to_id[key] = next_id
+				next_id += 1
+			_province_map[col + row_base] = cid
+			if _terrain_map[col + row_base] != Constants.OCEAN:
+				matched += 1
+
+	print("Provinces: ", next_id, " unique colors, ", matched, " land cells covered")
 
 
 func _fallback_terrain_from_heightmap(elev_img: Image) -> void:
@@ -616,6 +680,9 @@ func _fallback_terrain_colors() -> void:
 
 
 func _generate_terrain() -> void:
+	var pop_rng = RandomNumberGenerator.new()
+	pop_rng.seed = 456
+
 	for col in range(grid_width):
 		for row in range(grid_height):
 			var offset = Vector2i(col, row)
@@ -626,6 +693,12 @@ func _generate_terrain() -> void:
 			cell.offset_coords = offset
 			cell.terrain = _terrain_map[col + row * grid_width]
 			cell.elevation = _heightmap[col + row * grid_width]
+
+			var density = Constants.POPULATION_DENSITY.get(cell.terrain, [0, 0])
+			if density is Array and density.size() == 2:
+				cell.population = pop_rng.randi_range(density[0], density[1])
+			else:
+				cell.population = 0
 
 			cells[cube] = cell
 
@@ -657,12 +730,55 @@ func _print_terrain_stats() -> void:
 	print("Elevation low(<0.20):", elev_ranges.low, " mid(0.20-0.42):", elev_ranges.mid, " high(>0.42):", elev_ranges.high)
 
 
+func _print_population_stats() -> void:
+	var total_pop = 0
+	var top = []
+	for nid in nations:
+		var pop = nations[nid].population
+		total_pop += pop
+		top.append({"name": nations[nid].name, "pop": pop})
+	top.sort_custom(func(a, b): return a.pop > b.pop)
+	var top_str = []
+	for t in top.slice(0, 10):
+		top_str.append("%s:%d" % [t.name, t.pop])
+	print("Total population: ", total_pop, " (x1000)")
+	print("Top nations: ", ", ".join(top_str))
+
+
+func _print_diplomacy_stats() -> void:
+	var hostile = 0
+	var neutral = 0
+	var friendly = 0
+	var total_pairs = 0
+	for nid in nations:
+		for other in nations[nid].diplomacy:
+			var rel = nations[nid].diplomacy[other]
+			if rel < -0.3:
+				hostile += 1
+			elif rel < 0.3:
+				neutral += 1
+			else:
+				friendly += 1
+			total_pairs += 1
+	total_pairs /= 2
+	hostile /= 2
+	neutral /= 2
+	friendly /= 2
+	print("Diplomacy: ", total_pairs, " pairs, hostile:", hostile, " neutral:", neutral, " friendly:", friendly)
+
+
 func _generate_provinces() -> void:
 	provinces = _ProvinceGenerator.generate(cells, grid_width, grid_height)
 
 
 func _generate_nations() -> void:
+	_SR2030Loader.set_target_grid(grid_width, grid_height)
 	nations = _NationGenerator.generate(provinces, cells, 30)
+
+
+func _generate_diplomacy() -> void:
+	_DiplomacySystem.generate_initial_relations(nations, cells)
+	_print_diplomacy_stats()
 
 
 func _generate_rivers() -> void:

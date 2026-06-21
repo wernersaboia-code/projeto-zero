@@ -119,6 +119,6 @@
 		}
 	},
 	"hex_size": 10,
-	"grid_width": 320,
-	"grid_height": 200
+	"grid_width": 640,
+	"grid_height": 400
 }

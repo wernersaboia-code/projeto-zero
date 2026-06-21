@@ -2,13 +2,13 @@ extends Camera2D
 class_name CameraController
 
 const PAN_SPEED: float = 600.0
-const ZOOM_MIN: float = 0.10
+const ZOOM_MIN: float = 0.05
 const ZOOM_MAX: float = 2.0
 const ZOOM_STEP: float = 0.1
 const EDGE_MARGIN: float = 20.0
 const SMOOTHING: float = 8.0
 
-var _target_zoom: float = 0.25
+var _target_zoom: float = 0.12
 var _target_position: Vector2
 var _is_dragging: bool = false
 var _drag_start: Vector2

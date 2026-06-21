@@ -1,5 +1,9 @@
 extends RefCounted
 
+# Source coordinate space of geo_match.json (original 320x200)
+const _SRC_W: int = 320
+const _SRC_H: int = 200
+
 static var _data: Dictionary = {}
 static var _geo: Dictionary = {}
 static var _loaded: bool = false
@@ -9,6 +13,18 @@ static var _lookup: PackedInt32Array = PackedInt32Array()
 static var _lookup_w: int = 0
 static var _lookup_h: int = 0
 static var _lookup_built: bool = false
+
+# Target grid dimensions (geo_match boxes are scaled to this resolution)
+static var _target_w: int = 320
+static var _target_h: int = 200
+
+
+static func set_target_grid(w: int, h: int) -> void:
+	if w == _target_w and h == _target_h and _lookup_built:
+		return
+	_target_w = w
+	_target_h = h
+	_lookup_built = false
 
 
 static func load_data() -> Dictionary:
@@ -76,6 +92,9 @@ static func _build_lookup() -> void:
 		_lookup_built = true
 		return
 
+	var scale_x: float = float(_target_w) / float(_SRC_W)
+	var scale_y: float = float(_target_h) / float(_SRC_H)
+
 	var max_c: int = 0
 	var max_r: int = 0
 	var entries: Array = []
@@ -86,10 +105,10 @@ static func _build_lookup() -> void:
 		var boxes = geo[cid]
 		if boxes.size() < 4:
 			continue
-		var c_min: int = boxes[0]
-		var c_max: int = boxes[1]
-		var r_min: int = boxes[2]
-		var r_max: int = boxes[3]
+		var c_min: int = int(boxes[0] * scale_x)
+		var c_max: int = int(boxes[1] * scale_x)
+		var r_min: int = int(boxes[2] * scale_y)
+		var r_max: int = int(boxes[3] * scale_y)
 		if c_max > max_c:
 			max_c = c_max
 		if r_max > max_r:
