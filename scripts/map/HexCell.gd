@@ -1,17 +1,8 @@
 extends RefCounted
 
-const DEEP_WATER = 0
-const SHALLOW_WATER = 1
-const PLAINS = 2
-const FOREST = 3
-const HILLS = 4
-const MOUNTAINS = 5
-const DESERT = 6
-const TUNDRA = 7
-
 var cube_coords: Vector3
 var offset_coords: Vector2i
-var terrain: int = PLAINS
+var terrain: int = 2  # PLAINS default
 var elevation: float = 0.0
 var province_id: int = -1
 var population: int = 0
@@ -25,20 +16,25 @@ var resource_amount: int = 0
 
 func get_terrain_name() -> String:
 	match terrain:
-		DEEP_WATER: return "Deep Water"
-		SHALLOW_WATER: return "Shallow Water"
-		PLAINS: return "Plains"
-		FOREST: return "Forest"
-		HILLS: return "Hills"
-		MOUNTAINS: return "Mountains"
-		DESERT: return "Desert"
-		TUNDRA: return "Tundra"
+		Constants.OCEAN: return "Ocean"
+		Constants.SHALLOW_WATER: return "Shallow Water"
+		Constants.PLAINS: return "Plains"
+		Constants.FOREST: return "Forest"
+		Constants.WOODS: return "Woods"
+		Constants.HILLS: return "Hills"
+		Constants.MOUNTAINS: return "Mountains"
+		Constants.DESERT: return "Desert"
+		Constants.JUNGLE: return "Jungle"
+		Constants.MARSH: return "Marsh"
+		Constants.URBAN: return "Urban"
+		Constants.ARCTIC: return "Arctic"
+		Constants.TUNDRA: return "Tundra"
 	return "Unknown"
 
 
 func is_passable() -> bool:
-	return terrain != DEEP_WATER and terrain != MOUNTAINS
+	return terrain != Constants.OCEAN and terrain != Constants.MOUNTAINS
 
 
 func is_water() -> bool:
-	return terrain == DEEP_WATER or terrain == SHALLOW_WATER
+	return terrain == Constants.OCEAN or terrain == Constants.SHALLOW_WATER

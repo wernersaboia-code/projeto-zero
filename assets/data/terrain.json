@@ -1,12 +1,13 @@
 {
 	"terrain_types": {
-		"deep_water": {
+		"ocean": {
 			"id": 0,
-			"name": "Deep Water",
+			"name": "Ocean",
 			"color": "#0e2a4a",
 			"passable": false,
 			"movement_cost": 999,
-			"defense_modifier": 0.0
+			"defense_modifier": 0.0,
+			"is_water": true
 		},
 		"shallow_water": {
 			"id": 1,
@@ -14,55 +15,107 @@
 			"color": "#1a4a7a",
 			"passable": true,
 			"movement_cost": 3.0,
-			"defense_modifier": -0.2
+			"defense_modifier": -0.2,
+			"is_water": true
 		},
 		"plains": {
 			"id": 2,
 			"name": "Plains",
-			"color": "#6aad3a",
+			"color": "#f1ddb8",
 			"passable": true,
 			"movement_cost": 1.0,
-			"defense_modifier": 0.0
+			"defense_modifier": 0.0,
+			"is_water": false
 		},
 		"forest": {
 			"id": 3,
 			"name": "Forest",
-			"color": "#2a6a1e",
+			"color": "#274f0c",
 			"passable": true,
 			"movement_cost": 2.0,
-			"defense_modifier": 0.3
+			"defense_modifier": 0.3,
+			"is_water": false
+		},
+		"woods": {
+			"id": 4,
+			"name": "Woods",
+			"color": "#5b7b2d",
+			"passable": true,
+			"movement_cost": 1.5,
+			"defense_modifier": 0.2,
+			"is_water": false
 		},
 		"hills": {
-			"id": 4,
+			"id": 5,
 			"name": "Hills",
-			"color": "#8a7a3a",
+			"color": "#874600",
 			"passable": true,
 			"movement_cost": 1.5,
-			"defense_modifier": 0.2
+			"defense_modifier": 0.2,
+			"is_water": false
 		},
 		"mountains": {
-			"id": 5,
+			"id": 6,
 			"name": "Mountains",
-			"color": "#7a6a5a",
+			"color": "#756c77",
 			"passable": false,
 			"movement_cost": 999,
-			"defense_modifier": 0.5
+			"defense_modifier": 0.5,
+			"is_water": false
 		},
 		"desert": {
-			"id": 6,
+			"id": 7,
 			"name": "Desert",
-			"color": "#d4b63a",
+			"color": "#dac300",
+			"passable": true,
+			"movement_cost": 1.0,
+			"defense_modifier": -0.1,
+			"is_water": false
+		},
+		"jungle": {
+			"id": 8,
+			"name": "Jungle",
+			"color": "#209700",
 			"passable": true,
 			"movement_cost": 1.5,
-			"defense_modifier": -0.1
+			"defense_modifier": 0.3,
+			"is_water": false
+		},
+		"marsh": {
+			"id": 9,
+			"name": "Marsh",
+			"color": "#4c7069",
+			"passable": true,
+			"movement_cost": 1.5,
+			"defense_modifier": 0.4,
+			"is_water": false
+		},
+		"urban": {
+			"id": 10,
+			"name": "Urban",
+			"color": "#8968a5",
+			"passable": true,
+			"movement_cost": 1.2,
+			"defense_modifier": 0.4,
+			"is_water": false
+		},
+		"arctic": {
+			"id": 11,
+			"name": "Arctic",
+			"color": "#ebebeb",
+			"passable": true,
+			"movement_cost": 1.0,
+			"defense_modifier": 0.0,
+			"is_water": false
 		},
 		"tundra": {
-			"id": 7,
+			"id": 12,
 			"name": "Tundra",
 			"color": "#b8c8b8",
 			"passable": true,
 			"movement_cost": 1.5,
-			"defense_modifier": 0.1
+			"defense_modifier": 0.1,
+			"is_water": false
 		}
 	},
 	"hex_size": 10,

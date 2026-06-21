@@ -30,6 +30,7 @@ var show_political_mode: bool = true:
 var terrain_colors: Dictionary = {}
 var _noise_moisture: FastNoiseLite
 var _heightmap: Array = []
+var _terrain_map: Array = []  # terrain type per cell (from terrain.bmp)
 var _hovered_cell: Vector3 = Vector3(99999, 99999, 99999)
 var _nation_border_cache: Dictionary = {}  # nid -> PackedVector2Array of segment pairs
 var _province_border_cache: PackedVector2Array = PackedVector2Array()  # flat segment pairs
@@ -115,226 +116,363 @@ func _on_select_closed() -> void:
 
 func _setup_heightmap() -> void:
 	_heightmap.resize(grid_width * grid_height)
+	_terrain_map.resize(grid_width * grid_height)
+	_terrain_map.fill(Constants.OCEAN)
 
-	# Try loading from PNG first (real Earth data)
-	var img_path = "res://assets/data/maps/earth_heightmap.png"
-	if FileAccess.file_exists(img_path):
-		var img = Image.new()
-		var err = img.load(img_path)
-		if err == OK:
-			if img.get_width() != grid_width or img.get_height() != grid_height:
-				img.resize(grid_width, grid_height, Image.INTERPOLATE_LANCZOS)
+	# Primary source: terrain.bmp (5616x2160, 8bpp indexed, palette from terrain.txt)
+	# Provides exact terrain type per pixel. Downscaled to grid_width x grid_height.
+	var terrain_bmp_path = "res://assets/data/maps/terrain.bmp"
+	var has_terrain_bmp = FileAccess.file_exists(terrain_bmp_path)
 
-			_heightmap_color.resize(grid_width * grid_height)
-			for c in grid_width:
-				for r in grid_height:
-					_heightmap_color[c + r * grid_width] = img.get_pixel(c, r)
+	# Secondary source: earth_heightmap.png (320x200) for elevation
+	var elev_img: Image = null
+	var elev_path = "res://assets/data/maps/earth_heightmap.png"
+	if FileAccess.file_exists(elev_path):
+		var e_img = Image.new()
+		var e_err = e_img.load(elev_path)
+		if e_err == OK:
+			if e_img.get_width() != grid_width or e_img.get_height() != grid_height:
+				e_img.resize(grid_width, grid_height, Image.INTERPOLATE_LANCZOS)
+			elev_img = e_img
 
-			var land_mask = []
-			land_mask.resize(grid_width * grid_height)
-			for col in grid_width:
-				for row in grid_height:
-					var p = img.get_pixel(col, row)
-					var total = p.r + p.g + p.b
-					var b_ratio = p.b / total if total > 0 else 0
-					var g_ratio = p.g / total if total > 0 else 0
-					var r_ratio = p.r / total if total > 0 else 0
-					var bright = total / 3.0
-					var land = false
-					if bright > 0.65 and b_ratio < 0.45:
-						land = true
-					elif r_ratio > 0.40 or g_ratio > 0.40:
-						land = true
-					elif b_ratio > 0.45:
-						land = false
-					else:
-						land = bright > 0.5
-					land_mask[col + row * grid_width] = land
-
-		# Step 2: distance from coast for LAND (inward)
-			var dist_land = []
-			dist_land.resize(grid_width * grid_height)
-			for col in grid_width:
-				for row in grid_height:
-					var idx = col + row * grid_width
-					if not land_mask[idx]:
-						dist_land[idx] = -1
-						continue
-					var coastal = false
-					for dc in [-1, 0, 1]:
-						for dr in [-1, 0, 1]:
-							if dc == 0 and dr == 0: continue
-							var nc = col + dc
-							var nr = row + dr
-							if nc < 0 or nc >= grid_width or nr < 0 or nr >= grid_height: continue
-							if not land_mask[nc + nr * grid_width]:
-								coastal = true
-								break
-						if coastal: break
-					dist_land[idx] = 1 if coastal else 999
-
-			# Two-pass 8-neighbour Chebyshev distance sweep (exact; replaces 60 relaxation passes).
-			# Forward pass: top-left -> bottom-right.
-			for row in grid_height:
-				var row_base = row * grid_width
-				for col in grid_width:
-					var idx = col + row_base
-					if dist_land[idx] == -1:
-						continue
-					var best = dist_land[idx]
-					if row > 0:
-						var up_base = (row - 1) * grid_width
-						if col > 0:
-							var nv = dist_land[up_base + col - 1]
-							if nv >= 0 and nv + 1 < best:
-								best = nv + 1
-						var nv_u = dist_land[up_base + col]
-						if nv_u >= 0 and nv_u + 1 < best:
-							best = nv_u + 1
-						if col + 1 < grid_width:
-							var nv_ur = dist_land[up_base + col + 1]
-							if nv_ur >= 0 and nv_ur + 1 < best:
-								best = nv_ur + 1
-					if col > 0:
-						var nv_l = dist_land[row_base + col - 1]
-						if nv_l >= 0 and nv_l + 1 < best:
-							best = nv_l + 1
-					dist_land[idx] = best
-			# Backward pass: bottom-right -> top-left.
-			for row in range(grid_height - 1, -1, -1):
-				var row_base = row * grid_width
-				for col in range(grid_width - 1, -1, -1):
-					var idx = col + row_base
-					if dist_land[idx] == -1:
-						continue
-					var best = dist_land[idx]
-					if row + 1 < grid_height:
-						var dn_base = (row + 1) * grid_width
-						if col + 1 < grid_width:
-							var nv = dist_land[dn_base + col + 1]
-							if nv >= 0 and nv + 1 < best:
-								best = nv + 1
-						var nv_d = dist_land[dn_base + col]
-						if nv_d >= 0 and nv_d + 1 < best:
-							best = nv_d + 1
-						if col > 0:
-							var nv_dl = dist_land[dn_base + col - 1]
-							if nv_dl >= 0 and nv_dl + 1 < best:
-								best = nv_dl + 1
-					if col + 1 < grid_width:
-						var nv_r = dist_land[row_base + col + 1]
-						if nv_r >= 0 and nv_r + 1 < best:
-							best = nv_r + 1
-					dist_land[idx] = best
-
-			# Step 3: distance from coast for WATER (outward) → coastal shallows
-			var dist_water = []
-			dist_water.resize(grid_width * grid_height)
-			for col in grid_width:
-				for row in grid_height:
-					var idx = col + row * grid_width
-					if land_mask[idx]:
-						dist_water[idx] = -1
-						continue
-					var coastal = false
-					for dc in [-1, 0, 1]:
-						for dr in [-1, 0, 1]:
-							if dc == 0 and dr == 0: continue
-							var nc = col + dc
-							var nr = row + dr
-							if nc < 0 or nc >= grid_width or nr < 0 or nr >= grid_height: continue
-							if land_mask[nc + nr * grid_width]:
-								coastal = true
-								break
-						if coastal: break
-					dist_water[idx] = 1 if coastal else 999
-
-			# Two-pass 8-neighbour Chebyshev distance sweep for water (replaces 10 relaxation passes).
-			for row in grid_height:
-				var row_base = row * grid_width
-				for col in grid_width:
-					var idx = col + row_base
-					if dist_water[idx] == -1:
-						continue
-					var best = dist_water[idx]
-					if row > 0:
-						var up_base = (row - 1) * grid_width
-						if col > 0:
-							var nv = dist_water[up_base + col - 1]
-							if nv >= 0 and nv + 1 < best:
-								best = nv + 1
-						var nv_u = dist_water[up_base + col]
-						if nv_u >= 0 and nv_u + 1 < best:
-							best = nv_u + 1
-						if col + 1 < grid_width:
-							var nv_ur = dist_water[up_base + col + 1]
-							if nv_ur >= 0 and nv_ur + 1 < best:
-								best = nv_ur + 1
-					if col > 0:
-						var nv_l = dist_water[row_base + col - 1]
-						if nv_l >= 0 and nv_l + 1 < best:
-							best = nv_l + 1
-					dist_water[idx] = best
-			for row in range(grid_height - 1, -1, -1):
-				var row_base = row * grid_width
-				for col in range(grid_width - 1, -1, -1):
-					var idx = col + row_base
-					if dist_water[idx] == -1:
-						continue
-					var best = dist_water[idx]
-					if row + 1 < grid_height:
-						var dn_base = (row + 1) * grid_width
-						if col + 1 < grid_width:
-							var nv = dist_water[dn_base + col + 1]
-							if nv >= 0 and nv + 1 < best:
-								best = nv + 1
-						var nv_d = dist_water[dn_base + col]
-						if nv_d >= 0 and nv_d + 1 < best:
-							best = nv_d + 1
-						if col > 0:
-							var nv_dl = dist_water[dn_base + col - 1]
-							if nv_dl >= 0 and nv_dl + 1 < best:
-								best = nv_dl + 1
-					if col + 1 < grid_width:
-						var nv_r = dist_water[row_base + col + 1]
-						if nv_r >= 0 and nv_r + 1 < best:
-							best = nv_r + 1
-					dist_water[idx] = best
-
-			var noise = FastNoiseLite.new()
-			noise.seed = 42
-			noise.frequency = 0.04
-			noise.fractal_octaves = 2
-			noise.noise_type = FastNoiseLite.TYPE_PERLIN
-
-			var land_count = 0
-			var max_dist = 0
-			for col in grid_width:
-				for row in grid_height:
-					var idx = col + row * grid_width
-					if land_mask[idx]:
-						var d = dist_land[idx]
-						if d > max_dist: max_dist = d
-						var base = 0.20 + min(d, 60.0) / 30.0
-						var n = noise.get_noise_2d(float(col) * 0.15, float(row) * 0.15) * 0.10
-						_heightmap[idx] = clamp(base + n, 0.12, 0.90)
-						land_count += 1
-					else:
-						var d = dist_water[idx]
-						if d <= 0 or d >= 999:
-							_heightmap[idx] = 0.06
-						elif d <= 2:
-							_heightmap[idx] = 0.16
-						else:
-							_heightmap[idx] = 0.06 + (0.06 * min(d, 6)) / 8.0
-
-			print("Loaded Earth heightmap: land=", land_count, " max_dist=", max_dist)
-		else:
-			push_warning("Failed to load earth_heightmap.png, error: ", err)
-			_generate_procedural_heightmap()
+	if has_terrain_bmp:
+		_setup_from_terrain_bmp(terrain_bmp_path, elev_img)
 	else:
-		print("No earth_heightmap.png found, using procedural generation")
+		_fallback_terrain_from_heightmap(elev_img)
+
+	# Build land mask from terrain types for distance-based elevation
+	_build_land_mask_and_elevation(elev_img)
+
+
+func _setup_from_terrain_bmp(path: String, elev_img: Image) -> void:
+	# Load the 8bpp indexed BMP and read raw palette indices.
+	# Godot's Image.load() may not preserve palette indices for 8bpp BMP,
+	# so we rely on the fact that terrain.bmp uses a grayscale palette where
+	# R=G=B=index. We read the R channel as the index.
+	var img = Image.new()
+	var err = img.load(path)
+	if err != OK:
+		push_warning("Failed to load terrain.bmp, error: ", err, " — falling back")
+		_fallback_terrain_from_heightmap(elev_img)
+		return
+
+	var src_w = img.get_width()
+	var src_h = img.get_height()
+	print("terrain.bmp loaded: ", src_w, "x", src_h)
+
+	# Sample terrain type at each grid cell by nearest-neighbour downsampling.
+	var palette = Constants.PALETTE_MAP
+	var land_count = 0
+	for row in grid_height:
+		var sy = int(float(row) / float(grid_height) * float(src_h))
+		if sy >= src_h:
+			sy = src_h - 1
+		var row_base = row * grid_width
+		for col in grid_width:
+			var sx = int(float(col) / float(grid_width) * float(src_w))
+			if sx >= src_w:
+				sx = src_w - 1
+			var p = img.get_pixel(sx, sy)
+			# In 8bpp grayscale BMP, R=G=B=palette index.
+			var idx = int(p.r * 255.0)
+			var t = palette.get(idx, Constants.OCEAN)
+			_terrain_map[col + row_base] = t
+			if t != Constants.OCEAN:
+				land_count += 1
+
+	print("Terrain from BMP: land=", land_count, "/", grid_width * grid_height)
+
+	# Also store heightmap colors for the MapBaseDrawer to render the source image.
+	if elev_img:
+		_heightmap_color.resize(grid_width * grid_height)
+		for c in grid_width:
+			for r in grid_height:
+				_heightmap_color[c + r * grid_width] = elev_img.get_pixel(c, r)
+
+
+func _fallback_terrain_from_heightmap(elev_img: Image) -> void:
+	# Legacy path: derive terrain from earth_heightmap.png using elevation + latitude.
+	# Only used if terrain.bmp is missing.
+	if elev_img:
+		_heightmap_color.resize(grid_width * grid_height)
+		for c in grid_width:
+			for r in grid_height:
+				_heightmap_color[c + r * grid_width] = elev_img.get_pixel(c, r)
+		for col in grid_width:
+			for row in grid_height:
+				_terrain_map[col + row * grid_width] = _calculate_terrain_fallback(Vector2i(col, row), elev_img)
+	else:
 		_generate_procedural_heightmap()
+
+
+func _build_land_mask_and_elevation(elev_img: Image) -> void:
+	# Build land mask from terrain types
+	var land_mask = []
+	land_mask.resize(grid_width * grid_height)
+	for i in grid_width * grid_height:
+		land_mask[i] = _terrain_map[i] != Constants.OCEAN
+
+	# Distance from coast (land inward) for elevation shaping
+	var dist_land = []
+	dist_land.resize(grid_width * grid_height)
+	for col in grid_width:
+		for row in grid_height:
+			var idx = col + row * grid_width
+			if not land_mask[idx]:
+				dist_land[idx] = -1
+				continue
+			var coastal = false
+			for dc in [-1, 0, 1]:
+				for dr in [-1, 0, 1]:
+					if dc == 0 and dr == 0:
+						continue
+					var nc = col + dc
+					var nr = row + dr
+					if nc < 0 or nc >= grid_width or nr < 0 or nr >= grid_height:
+						continue
+					if not land_mask[nc + nr * grid_width]:
+						coastal = true
+						break
+				if coastal:
+					break
+			dist_land[idx] = 1 if coastal else 999
+
+	# Two-pass sweep for land distance
+	for row in grid_height:
+		var row_base = row * grid_width
+		for col in grid_width:
+			var idx = col + row_base
+			if dist_land[idx] == -1:
+				continue
+			var best = dist_land[idx]
+			if row > 0:
+				var up_base = (row - 1) * grid_width
+				if col > 0:
+					var nv = dist_land[up_base + col - 1]
+					if nv >= 0 and nv + 1 < best:
+						best = nv + 1
+				var nv_u = dist_land[up_base + col]
+				if nv_u >= 0 and nv_u + 1 < best:
+					best = nv_u + 1
+				if col + 1 < grid_width:
+					var nv_ur = dist_land[up_base + col + 1]
+					if nv_ur >= 0 and nv_ur + 1 < best:
+						best = nv_ur + 1
+			if col > 0:
+				var nv_l = dist_land[row_base + col - 1]
+				if nv_l >= 0 and nv_l + 1 < best:
+					best = nv_l + 1
+			dist_land[idx] = best
+	for row in range(grid_height - 1, -1, -1):
+		var row_base = row * grid_width
+		for col in range(grid_width - 1, -1, -1):
+			var idx = col + row_base
+			if dist_land[idx] == -1:
+				continue
+			var best = dist_land[idx]
+			if row + 1 < grid_height:
+				var dn_base = (row + 1) * grid_width
+				if col + 1 < grid_width:
+					var nv = dist_land[dn_base + col + 1]
+					if nv >= 0 and nv + 1 < best:
+						best = nv + 1
+				var nv_d = dist_land[dn_base + col]
+				if nv_d >= 0 and nv_d + 1 < best:
+					best = nv_d + 1
+				if col > 0:
+					var nv_dl = dist_land[dn_base + col - 1]
+					if nv_dl >= 0 and nv_dl + 1 < best:
+						best = nv_dl + 1
+			if col + 1 < grid_width:
+				var nv_r = dist_land[row_base + col + 1]
+				if nv_r >= 0 and nv_r + 1 < best:
+					best = nv_r + 1
+			dist_land[idx] = best
+
+	# Distance from coast (water outward) for shallow water
+	var dist_water = []
+	dist_water.resize(grid_width * grid_height)
+	for col in grid_width:
+		for row in grid_height:
+			var idx = col + row * grid_width
+			if land_mask[idx]:
+				dist_water[idx] = -1
+				continue
+			var coastal = false
+			for dc in [-1, 0, 1]:
+				for dr in [-1, 0, 1]:
+					if dc == 0 and dr == 0:
+						continue
+					var nc = col + dc
+					var nr = row + dr
+					if nc < 0 or nc >= grid_width or nr < 0 or nr >= grid_height:
+						continue
+					if land_mask[nc + nr * grid_width]:
+						coastal = true
+						break
+				if coastal:
+					break
+			dist_water[idx] = 1 if coastal else 999
+
+	for row in grid_height:
+		var row_base = row * grid_width
+		for col in grid_width:
+			var idx = col + row_base
+			if dist_water[idx] == -1:
+				continue
+			var best = dist_water[idx]
+			if row > 0:
+				var up_base = (row - 1) * grid_width
+				if col > 0:
+					var nv = dist_water[up_base + col - 1]
+					if nv >= 0 and nv + 1 < best:
+						best = nv + 1
+				var nv_u = dist_water[up_base + col]
+				if nv_u >= 0 and nv_u + 1 < best:
+					best = nv_u + 1
+				if col + 1 < grid_width:
+					var nv_ur = dist_water[up_base + col + 1]
+					if nv_ur >= 0 and nv_ur + 1 < best:
+						best = nv_ur + 1
+			if col > 0:
+				var nv_l = dist_water[row_base + col - 1]
+				if nv_l >= 0 and nv_l + 1 < best:
+					best = nv_l + 1
+			dist_water[idx] = best
+	for row in range(grid_height - 1, -1, -1):
+		var row_base = row * grid_width
+		for col in range(grid_width - 1, -1, -1):
+			var idx = col + row_base
+			if dist_water[idx] == -1:
+				continue
+			var best = dist_water[idx]
+			if row + 1 < grid_height:
+				var dn_base = (row + 1) * grid_width
+				if col + 1 < grid_width:
+					var nv = dist_water[dn_base + col + 1]
+					if nv >= 0 and nv + 1 < best:
+						best = nv + 1
+				var nv_d = dist_water[dn_base + col]
+				if nv_d >= 0 and nv_d + 1 < best:
+					best = nv_d + 1
+				if col > 0:
+					var nv_dl = dist_water[dn_base + col - 1]
+					if nv_dl >= 0 and nv_dl + 1 < best:
+						best = nv_dl + 1
+			if col + 1 < grid_width:
+				var nv_r = dist_water[row_base + col + 1]
+				if nv_r >= 0 and nv_r + 1 < best:
+					best = nv_r + 1
+			dist_water[idx] = best
+
+	# Assign elevation based on distance from coast + terrain type
+	var noise = FastNoiseLite.new()
+	noise.seed = 42
+	noise.frequency = 0.04
+	noise.fractal_octaves = 2
+	noise.noise_type = FastNoiseLite.TYPE_PERLIN
+
+	var land_count = 0
+	var max_dist = 0
+	for col in grid_width:
+		for row in grid_height:
+			var idx = col + row * grid_width
+			var t = _terrain_map[idx]
+			if t == Constants.OCEAN:
+				var d = dist_water[idx]
+				if d <= 0 or d >= 999:
+					_heightmap[idx] = 0.06
+				elif d <= 2:
+					_heightmap[idx] = 0.16
+					_terrain_map[idx] = Constants.SHALLOW_WATER
+				else:
+					_heightmap[idx] = 0.06 + (0.06 * min(d, 6)) / 8.0
+			else:
+				var d = dist_land[idx]
+				if d > max_dist:
+					max_dist = d
+				var base = 0.20 + min(d, 60.0) / 30.0
+				# Terrain-based elevation modifiers
+				match t:
+					Constants.MOUNTAINS:
+						base += 0.30
+					Constants.HILLS:
+						base += 0.12
+					Constants.URBAN:
+						base += 0.02
+				var n = noise.get_noise_2d(float(col) * 0.15, float(row) * 0.15) * 0.10
+				_heightmap[idx] = clamp(base + n, 0.12, 0.95)
+				land_count += 1
+
+	print("Elevation built: land=", land_count, " max_dist=", max_dist)
+
+
+func _calculate_terrain_fallback(offset: Vector2i, elev_img: Image) -> int:
+	# Legacy heuristic terrain classifier (only used when terrain.bmp is missing).
+	var col = offset.x
+	var row = offset.y
+	var elevation = _heightmap[col + row * grid_width]
+
+	if elevation < 0.12:
+		return Constants.OCEAN
+	elif elevation < 0.20:
+		return Constants.SHALLOW_WATER
+
+	var ny = float(row) / float(grid_height)
+	var lat = abs(ny - 0.5) * 2.0
+	var nx = float(col) / float(grid_width)
+	var moisture = _noise_moisture.get_noise_2d(nx * 500.0, ny * 500.0)
+
+	if elevation > 0.42:
+		if lat > 0.65:
+			return Constants.MOUNTAINS
+		elif moisture < -0.2:
+			return Constants.HILLS
+		else:
+			return Constants.MOUNTAINS
+	elif elevation > 0.28:
+		if lat > 0.80:
+			return Constants.ARCTIC
+		elif lat > 0.50 and moisture < -0.3:
+			return Constants.DESERT
+		elif moisture < -0.2:
+			return Constants.DESERT
+		elif moisture < 0.2:
+			return Constants.HILLS
+		else:
+			return Constants.FOREST
+
+	if lat > 0.85:
+		return Constants.ARCTIC
+	elif lat > 0.65:
+		if moisture < 0.0:
+			return Constants.TUNDRA
+		elif moisture < 0.4:
+			return Constants.PLAINS
+		else:
+			return Constants.FOREST
+	elif lat > 0.50:
+		if moisture < -0.3:
+			return Constants.DESERT
+		elif moisture < 0.1:
+			return Constants.PLAINS
+		else:
+			return Constants.FOREST
+	elif lat > 0.15:
+		if moisture < -0.1:
+			return Constants.DESERT
+		elif moisture < 0.2:
+			return Constants.PLAINS
+		else:
+			return Constants.FOREST
+	else:
+		if moisture < -0.3:
+			return Constants.DESERT
+		elif moisture < 0.1:
+			return Constants.PLAINS
+		else:
+			return Constants.JUNGLE
+
 
 
 func _generate_procedural_heightmap() -> void:
@@ -461,13 +599,18 @@ func _load_terrain_colors() -> void:
 
 func _fallback_terrain_colors() -> void:
 	terrain_colors = {
-		Constants.DEEP_WATER: Color("#0e2a4a"),
+		Constants.OCEAN: Color("#0e2a4a"),
 		Constants.SHALLOW_WATER: Color("#1a4a7a"),
-		Constants.PLAINS: Color("#6aad3a"),
-		Constants.FOREST: Color("#2a6a1e"),
-		Constants.HILLS: Color("#8a7a3a"),
-		Constants.MOUNTAINS: Color("#7a6a5a"),
-		Constants.DESERT: Color("#d4b63a"),
+		Constants.PLAINS: Color("#f1ddb8"),
+		Constants.FOREST: Color("#274f0c"),
+		Constants.WOODS: Color("#5b7b2d"),
+		Constants.HILLS: Color("#874600"),
+		Constants.MOUNTAINS: Color("#756c77"),
+		Constants.DESERT: Color("#dac300"),
+		Constants.JUNGLE: Color("#209700"),
+		Constants.MARSH: Color("#4c7069"),
+		Constants.URBAN: Color("#8968a5"),
+		Constants.ARCTIC: Color("#ebebeb"),
 		Constants.TUNDRA: Color("#b8c8b8")
 	}
 
@@ -481,86 +624,12 @@ func _generate_terrain() -> void:
 			var cell = _HexCell.new()
 			cell.cube_coords = cube
 			cell.offset_coords = offset
-			cell.terrain = _calculate_terrain(offset)
+			cell.terrain = _terrain_map[col + row * grid_width]
 			cell.elevation = _heightmap[col + row * grid_width]
 
 			cells[cube] = cell
 
 	queue_redraw()
-
-
-func _calculate_terrain(offset: Vector2i) -> int:
-	var col = offset.x
-	var row = offset.y
-
-	var ny = float(row) / float(grid_height)
-	var elevation = _heightmap[col + row * grid_width]
-
-	if elevation < 0.12:
-		return Constants.DEEP_WATER
-	elif elevation < 0.20:
-		return Constants.SHALLOW_WATER
-
-	# Civ 6-style latitude-based biomes
-	var nx = float(col) / float(grid_width)
-	var lat = abs(ny - 0.5) * 2.0
-	var moisture = _noise_moisture.get_noise_2d(nx * 500.0, ny * 500.0)
-
-	# Elevation: mountains > 0.42, hills > 0.28, flat <= 0.28
-	if elevation > 0.42:
-		if lat > 0.65:
-			return Constants.MOUNTAINS
-		elif moisture < -0.2:
-			return Constants.HILLS
-		else:
-			return Constants.MOUNTAINS
-	elif elevation > 0.28:
-		if lat > 0.80:
-			return Constants.TUNDRA
-		elif lat > 0.50 and moisture < -0.3:
-			return Constants.DESERT
-		elif moisture < -0.2:
-			return Constants.DESERT
-		elif moisture < 0.2:
-			return Constants.HILLS
-		else:
-			return Constants.FOREST
-
-	# Flat land: latitude determines biome
-	if lat > 0.85:
-		return Constants.TUNDRA
-	elif lat > 0.65:
-		if moisture < 0.0:
-			return Constants.TUNDRA
-		elif moisture < 0.4:
-			return Constants.PLAINS
-		else:
-			return Constants.FOREST
-	elif lat > 0.50:
-		if moisture < -0.3:
-			return Constants.DESERT
-		elif moisture < 0.1:
-			return Constants.PLAINS
-		elif moisture < 0.5:
-			return Constants.FOREST
-		else:
-			return Constants.FOREST
-	elif lat > 0.15:
-		if moisture < -0.1:
-			return Constants.DESERT
-		elif moisture < 0.2:
-			return Constants.PLAINS
-		elif moisture < 0.5:
-			return Constants.FOREST
-		else:
-			return Constants.FOREST
-	else:
-		if moisture < -0.3:
-			return Constants.DESERT
-		elif moisture < 0.1:
-			return Constants.PLAINS
-		else:
-			return Constants.FOREST
 
 
 func _print_terrain_stats() -> void:
@@ -574,7 +643,13 @@ func _print_terrain_stats() -> void:
 		if e < 0.20: elev_ranges.low += 1
 		elif e < 0.42: elev_ranges.mid += 1
 		else: elev_ranges.high += 1
-	var type_names = {Constants.DEEP_WATER:"DEEP_WATER", Constants.SHALLOW_WATER:"SHALLOW_WATER", Constants.PLAINS:"PLAINS", Constants.FOREST:"FOREST", Constants.HILLS:"HILLS", Constants.MOUNTAINS:"MOUNTAINS", Constants.DESERT:"DESERT", Constants.TUNDRA:"TUNDRA"}
+	var type_names = {
+		Constants.OCEAN:"OCEAN", Constants.SHALLOW_WATER:"SHALLOW_WATER",
+		Constants.PLAINS:"PLAINS", Constants.FOREST:"FOREST", Constants.WOODS:"WOODS",
+		Constants.HILLS:"HILLS", Constants.MOUNTAINS:"MOUNTAINS", Constants.DESERT:"DESERT",
+		Constants.JUNGLE:"JUNGLE", Constants.MARSH:"MARSH", Constants.URBAN:"URBAN",
+		Constants.ARCTIC:"ARCTIC", Constants.TUNDRA:"TUNDRA"
+	}
 	var parts = []
 	for k in counts:
 		parts.push_back(type_names.get(k, str(k)) + ":" + str(counts[k]))

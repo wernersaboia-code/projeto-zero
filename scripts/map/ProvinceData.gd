@@ -16,4 +16,4 @@ func get_hex_count() -> int:
 
 
 func is_water() -> bool:
-	return terrain_primary == Constants.DEEP_WATER or terrain_primary == Constants.SHALLOW_WATER
+	return terrain_primary == Constants.OCEAN or terrain_primary == Constants.SHALLOW_WATER

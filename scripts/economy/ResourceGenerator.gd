@@ -16,6 +16,11 @@ const DEPOSIT_RULES: Dictionary = {
 		R.Type.RUBBER: [0.15, 10, 50],
 		R.Type.COAL: [0.08, 5, 25]
 	},
+	Constants.WOODS: {
+		R.Type.TIMBER: [0.50, 15, 80],
+		R.Type.AGRICULTURE: [0.30, 5, 35],
+		R.Type.RUBBER: [0.10, 5, 30]
+	},
 	Constants.HILLS: {
 		R.Type.COAL: [0.40, 20, 80],
 		R.Type.METAL_ORE: [0.30, 15, 70],
@@ -29,6 +34,22 @@ const DEPOSIT_RULES: Dictionary = {
 	Constants.DESERT: {
 		R.Type.PETROLEUM: [0.30, 15, 80],
 		R.Type.COAL: [0.10, 5, 30],
+		R.Type.URANIUM: [0.05, 5, 20]
+	},
+	Constants.JUNGLE: {
+		R.Type.TIMBER: [0.65, 20, 90],
+		R.Type.RUBBER: [0.40, 15, 60],
+		R.Type.AGRICULTURE: [0.20, 5, 30]
+	},
+	Constants.MARSH: {
+		R.Type.PETROLEUM: [0.10, 5, 25],
+		R.Type.AGRICULTURE: [0.15, 5, 20]
+	},
+	Constants.URBAN: {
+		R.Type.AGRICULTURE: [0.30, 5, 20]
+	},
+	Constants.ARCTIC: {
+		R.Type.PETROLEUM: [0.20, 10, 60],
 		R.Type.URANIUM: [0.05, 5, 20]
 	},
 	Constants.TUNDRA: {
