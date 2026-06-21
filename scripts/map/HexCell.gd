@@ -1,4 +1,4 @@
-extends Resource
+extends RefCounted
 
 const DEEP_WATER = 0
 const SHALLOW_WATER = 1

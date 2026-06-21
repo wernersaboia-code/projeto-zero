@@ -31,9 +31,9 @@ var terrain_colors: Dictionary = {}
 var _noise_moisture: FastNoiseLite
 var _heightmap: Array = []
 var _hovered_cell: Vector3 = Vector3(99999, 99999, 99999)
-var _nation_border_cache: Array = []
-var _province_border_cache: Array = []
-var _river_edge_cache: Array = []
+var _nation_border_cache: Dictionary = {}  # nid -> PackedVector2Array of segment pairs
+var _province_border_cache: PackedVector2Array = PackedVector2Array()  # flat segment pairs
+var _river_edge_cache: Dictionary = {}  # width -> PackedVector2Array of segment pairs
 var _heightmap_color: Array = []  # Color per cell (from PNG), empty = use procedural colors
 
 var _map_base: Node2D  # child that draws expensive hex fills (redrawn only on data change)
@@ -77,7 +77,12 @@ func _show_nation_select() -> void:
 
 
 func _on_select_closed() -> void:
-	var gm = get_tree().root.get_node("GameManager")
+	if not is_inside_tree():
+		return
+	var tree = get_tree()
+	if tree == null:
+		return
+	var gm = tree.root.get_node("GameManager")
 	if gm and gm.player_nation_id >= 0:
 		gm.is_paused = false
 		var nation = nations.get(gm.player_nation_id)
@@ -168,22 +173,59 @@ func _setup_heightmap() -> void:
 						if coastal: break
 					dist_land[idx] = 1 if coastal else 999
 
-			for _pass in 60:
+			# Two-pass 8-neighbour Chebyshev distance sweep (exact; replaces 60 relaxation passes).
+			# Forward pass: top-left -> bottom-right.
+			for row in grid_height:
+				var row_base = row * grid_width
 				for col in grid_width:
-					for row in grid_height:
-						var idx = col + row * grid_width
-						if dist_land[idx] == -1: continue
-						var best = dist_land[idx]
-						for dc in [-1, 0, 1]:
-							for dr in [-1, 0, 1]:
-								if dc == 0 and dr == 0: continue
-								var nc = col + dc
-								var nr = row + dr
-								if nc < 0 or nc >= grid_width or nr < 0 or nr >= grid_height: continue
-								var nv = dist_land[nc + nr * grid_width]
-								if nv >= 0 and nv + 1 < best:
-									best = nv + 1
-						dist_land[idx] = best
+					var idx = col + row_base
+					if dist_land[idx] == -1:
+						continue
+					var best = dist_land[idx]
+					if row > 0:
+						var up_base = (row - 1) * grid_width
+						if col > 0:
+							var nv = dist_land[up_base + col - 1]
+							if nv >= 0 and nv + 1 < best:
+								best = nv + 1
+						var nv_u = dist_land[up_base + col]
+						if nv_u >= 0 and nv_u + 1 < best:
+							best = nv_u + 1
+						if col + 1 < grid_width:
+							var nv_ur = dist_land[up_base + col + 1]
+							if nv_ur >= 0 and nv_ur + 1 < best:
+								best = nv_ur + 1
+					if col > 0:
+						var nv_l = dist_land[row_base + col - 1]
+						if nv_l >= 0 and nv_l + 1 < best:
+							best = nv_l + 1
+					dist_land[idx] = best
+			# Backward pass: bottom-right -> top-left.
+			for row in range(grid_height - 1, -1, -1):
+				var row_base = row * grid_width
+				for col in range(grid_width - 1, -1, -1):
+					var idx = col + row_base
+					if dist_land[idx] == -1:
+						continue
+					var best = dist_land[idx]
+					if row + 1 < grid_height:
+						var dn_base = (row + 1) * grid_width
+						if col + 1 < grid_width:
+							var nv = dist_land[dn_base + col + 1]
+							if nv >= 0 and nv + 1 < best:
+								best = nv + 1
+						var nv_d = dist_land[dn_base + col]
+						if nv_d >= 0 and nv_d + 1 < best:
+							best = nv_d + 1
+						if col > 0:
+							var nv_dl = dist_land[dn_base + col - 1]
+							if nv_dl >= 0 and nv_dl + 1 < best:
+								best = nv_dl + 1
+					if col + 1 < grid_width:
+						var nv_r = dist_land[row_base + col + 1]
+						if nv_r >= 0 and nv_r + 1 < best:
+							best = nv_r + 1
+					dist_land[idx] = best
 
 			# Step 3: distance from coast for WATER (outward) → coastal shallows
 			var dist_water = []
@@ -207,22 +249,57 @@ func _setup_heightmap() -> void:
 						if coastal: break
 					dist_water[idx] = 1 if coastal else 999
 
-			for _pass in 10:
+			# Two-pass 8-neighbour Chebyshev distance sweep for water (replaces 10 relaxation passes).
+			for row in grid_height:
+				var row_base = row * grid_width
 				for col in grid_width:
-					for row in grid_height:
-						var idx = col + row * grid_width
-						if dist_water[idx] == -1: continue
-						var best = dist_water[idx]
-						for dc in [-1, 0, 1]:
-							for dr in [-1, 0, 1]:
-								if dc == 0 and dr == 0: continue
-								var nc = col + dc
-								var nr = row + dr
-								if nc < 0 or nc >= grid_width or nr < 0 or nr >= grid_height: continue
-								var nv = dist_water[nc + nr * grid_width]
-								if nv >= 0 and nv + 1 < best:
-									best = nv + 1
-						dist_water[idx] = best
+					var idx = col + row_base
+					if dist_water[idx] == -1:
+						continue
+					var best = dist_water[idx]
+					if row > 0:
+						var up_base = (row - 1) * grid_width
+						if col > 0:
+							var nv = dist_water[up_base + col - 1]
+							if nv >= 0 and nv + 1 < best:
+								best = nv + 1
+						var nv_u = dist_water[up_base + col]
+						if nv_u >= 0 and nv_u + 1 < best:
+							best = nv_u + 1
+						if col + 1 < grid_width:
+							var nv_ur = dist_water[up_base + col + 1]
+							if nv_ur >= 0 and nv_ur + 1 < best:
+								best = nv_ur + 1
+					if col > 0:
+						var nv_l = dist_water[row_base + col - 1]
+						if nv_l >= 0 and nv_l + 1 < best:
+							best = nv_l + 1
+					dist_water[idx] = best
+			for row in range(grid_height - 1, -1, -1):
+				var row_base = row * grid_width
+				for col in range(grid_width - 1, -1, -1):
+					var idx = col + row_base
+					if dist_water[idx] == -1:
+						continue
+					var best = dist_water[idx]
+					if row + 1 < grid_height:
+						var dn_base = (row + 1) * grid_width
+						if col + 1 < grid_width:
+							var nv = dist_water[dn_base + col + 1]
+							if nv >= 0 and nv + 1 < best:
+								best = nv + 1
+						var nv_d = dist_water[dn_base + col]
+						if nv_d >= 0 and nv_d + 1 < best:
+							best = nv_d + 1
+						if col > 0:
+							var nv_dl = dist_water[dn_base + col - 1]
+							if nv_dl >= 0 and nv_dl + 1 < best:
+								best = nv_dl + 1
+					if col + 1 < grid_width:
+						var nv_r = dist_water[row_base + col + 1]
+						if nv_r >= 0 and nv_r + 1 < best:
+							best = nv_r + 1
+					dist_water[idx] = best
 
 			var noise = FastNoiseLite.new()
 			noise.seed = 42
@@ -526,23 +603,38 @@ func _setup_map_base() -> void:
 	_map_base.name = "MapBase"
 	_map_base.hex_grid = self
 	add_child(_map_base)
-	_map_base.queue_redraw()
+	_map_base.rebuild()
 
 
 func _refresh_map_base() -> void:
 	if _map_base:
-		_map_base.queue_redraw()
+		_map_base.rebuild()
 
 
-# Helper class that draws the expensive hex base to its own canvas.
+# Renders the expensive hex base. Hex fills use a MultiMesh (one GPU draw call
+# for all cells); resource icons are drawn via _draw() from a cached list.
+# The MultiMesh sits at z_index -1 so borders/rivers/hover (drawn by HexGrid)
+# render on top of the fills.
 class _MapBaseDrawer extends Node2D:
 	var hex_grid: HexGrid
 	const _Utils = preload("res://scripts/map/HexUtils.gd")
 	const _R = preload("res://scripts/economy/ResourceData.gd")
 
-	func _draw() -> void:
+	var _mm_instance: MultiMeshInstance2D
+	var _hex_mesh: ArrayMesh
+	var _icon_draws: Array = []  # each entry: [Vector2 pos, String icon, Color color]
+
+	func rebuild() -> void:
 		if not hex_grid:
+			queue_redraw()
 			return
+		if _hex_mesh == null:
+			_hex_mesh = _build_hex_mesh(hex_grid.hex_size)
+		if _mm_instance == null:
+			_mm_instance = MultiMeshInstance2D.new()
+			_mm_instance.z_index = -1
+			add_child(_mm_instance)
+
 		var cells = hex_grid.cells
 		var utils = _Utils
 		var hsize = hex_grid.hex_size
@@ -552,30 +644,61 @@ class _MapBaseDrawer extends Node2D:
 		var pol = hex_grid.show_political_mode
 		var nations = hex_grid.nations
 
+		var n: int = cells.size()
+		var mm = MultiMesh.new()
+		mm.mesh = _hex_mesh
+		mm.use_colors = true
+		mm.instance_count = n
+
+		var icon_draws: Array = []
+		var i: int = 0
 		for cube in cells:
 			var cell = cells[cube]
 			var center = utils.cube_to_pixel(cube, hsize)
-			var verts = utils.hex_vertices(center, hsize)
 
-			var final_color: Color
+			var base_color: Color
 			if hmap_color.size() > 0:
 				var idx = cell.offset_coords.x + cell.offset_coords.y * gwidth
-				final_color = hmap_color[idx] if idx < hmap_color.size() else Color.GRAY
+				base_color = hmap_color[idx] if idx < hmap_color.size() else Color.GRAY
 			else:
-				final_color = colors.get(cell.terrain, Color.GRAY)
+				base_color = colors.get(cell.terrain, Color.GRAY)
 
 			if pol and cell.owner_nation_id >= 0 and nations.has(cell.owner_nation_id):
-				final_color = final_color.lerp(nations[cell.owner_nation_id].color, 0.15)
+				base_color = base_color.lerp(nations[cell.owner_nation_id].color, 0.15)
 
-			draw_colored_polygon(verts, final_color)
+			mm.set_instance_transform_2d(i, Transform2D(0.0, center))
+			mm.set_instance_color(i, base_color)
+			i += 1
 
-		for cube in cells:
-			var cell = cells[cube]
 			if cell.resource_type >= 0:
-				var center = utils.cube_to_pixel(cube, hsize)
-				var icon = _R.get_icon(cell.resource_type)
-				var color = _R.get_color(cell.resource_type)
-				draw_string(ThemeDB.fallback_font, center + Vector2(-3, 4), icon, HORIZONTAL_ALIGNMENT_LEFT, -1, 7, color)
+				icon_draws.append([center + Vector2(-3, 4), _R.get_icon(cell.resource_type), _R.get_color(cell.resource_type)])
+
+		_mm_instance.multimesh = mm
+		_icon_draws = icon_draws
+		queue_redraw()
+
+	func _draw() -> void:
+		var font = ThemeDB.fallback_font
+		for d in _icon_draws:
+			draw_string(font, d[0], d[1], HORIZONTAL_ALIGNMENT_LEFT, -1, 7, d[2])
+
+	func _build_hex_mesh(size: float) -> ArrayMesh:
+		var mesh = ArrayMesh.new()
+		var verts := PackedVector2Array()
+		verts.append(Vector2.ZERO)
+		for v in _Utils.VERTEX_FLAT_TOP:
+			verts.append(v * size)
+		var indices := PackedInt32Array()
+		for i in 6:
+			indices.append(0)
+			indices.append(i + 1)
+			indices.append(((i + 1) % 6) + 1)
+		var arrays := []
+		arrays.resize(Mesh.ARRAY_MAX)
+		arrays[Mesh.ARRAY_VERTEX] = verts
+		arrays[Mesh.ARRAY_INDEX] = indices
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+		return mesh
 
 
 func _on_game_tick(_tick: int) -> void:
@@ -585,9 +708,14 @@ func _on_game_tick(_tick: int) -> void:
 
 
 func _build_border_cache() -> void:
-	_province_border_cache.clear()
-	_nation_border_cache.clear()
-	_river_edge_cache.clear()
+	_province_border_cache = PackedVector2Array()
+	_nation_border_cache = {}
+	_river_edge_cache = {}
+
+	# Build into mutable Arrays first (reference semantics), then pack.
+	var province_lines: Array = []
+	var nation_lines: Dictionary = {}  # nid -> Array of Vector2 pairs
+	var river_lines: Dictionary = {}   # width -> Array of Vector2 pairs
 
 	for cube in cells:
 		var cell = cells[cube] if cells.has(cube) else null
@@ -616,23 +744,43 @@ func _build_border_cache() -> void:
 			var cube_key = _cube_to_key(cube)
 			var neighbor_key = _cube_to_key(neighbor)
 
-			# River edges (only from lower-index cube to avoid duplicates)
-			if cube_key < neighbor_key:
-				if cell.is_river and not cells[neighbor].is_river:
-					var width = 1.0
-					if cell.flow_accumulation >= 100:
-						width = 3.5
-					elif cell.flow_accumulation >= 30:
-						width = 2.5
-					elif cell.flow_accumulation >= 8:
-						width = 1.5
-					_river_edge_cache.append([vert_a, vert_b, width])
+			# Each undirected edge is handled once (lower-key side).
+			if cube_key >= neighbor_key:
+				continue
 
-			if cube_key < neighbor_key:
-				if my_nid != n_nid:
-					_nation_border_cache.append([vert_a, vert_b, cube])
-				elif my_pid != n_pid:
-					_province_border_cache.append([vert_a, vert_b])
+			# River edges
+			if cell.is_river and not cells[neighbor].is_river:
+				var width = 1.0
+				if cell.flow_accumulation >= 100:
+					width = 3.5
+				elif cell.flow_accumulation >= 30:
+					width = 2.5
+				elif cell.flow_accumulation >= 8:
+					width = 1.5
+				var r_arr = river_lines.get(width, null)
+				if r_arr == null:
+					r_arr = []
+					river_lines[width] = r_arr
+				r_arr.append(vert_a)
+				r_arr.append(vert_b)
+
+			# Nation / province borders
+			if my_nid != n_nid:
+				var n_arr = nation_lines.get(my_nid, null)
+				if n_arr == null:
+					n_arr = []
+					nation_lines[my_nid] = n_arr
+				n_arr.append(vert_a)
+				n_arr.append(vert_b)
+			elif my_pid != n_pid:
+				province_lines.append(vert_a)
+				province_lines.append(vert_b)
+
+	_province_border_cache = PackedVector2Array(province_lines)
+	for nid in nation_lines:
+		_nation_border_cache[nid] = PackedVector2Array(nation_lines[nid])
+	for w in river_lines:
+		_river_edge_cache[w] = PackedVector2Array(river_lines[w])
 
 
 static func _cube_to_key(c: Vector3) -> int:
@@ -647,21 +795,17 @@ func _draw() -> void:
 		var center = _HexUtils.cube_to_pixel(hover_cube, hex_size)
 		hover_verts = _HexUtils.hex_vertices(center, hex_size)
 
-	for border in _province_border_cache:
-		draw_line(border[0], border[1], Color(0.4, 0.4, 0.4, 0.4), 0.8, true)
+	if _province_border_cache.size() > 0:
+		draw_multiline(_province_border_cache, Color(0.4, 0.4, 0.4, 0.4), 0.8, true)
 
-	for border in _nation_border_cache:
+	for nid in _nation_border_cache:
 		var col = Color(0.9, 0.9, 0.9, 0.85)
-		if show_political_mode:
-			var cube_a = border[2] as Vector3
-			if cells.has(cube_a):
-				var nid = cells[cube_a].owner_nation_id
-				if nid >= 0 and nations.has(nid):
-					col = nations[nid].color
-		draw_line(border[0], border[1], col, 2.5, true)
+		if show_political_mode and nid >= 0 and nations.has(nid):
+			col = nations[nid].color
+		draw_multiline(_nation_border_cache[nid], col, 2.5, true)
 
-	for edge in _river_edge_cache:
-		draw_line(edge[0], edge[1], Color(0.2, 0.5, 0.9, 0.85), edge[2], true)
+	for w in _river_edge_cache:
+		draw_multiline(_river_edge_cache[w], Color(0.2, 0.5, 0.9, 0.85), w, true)
 
 	if not hover_verts.is_empty():
 		draw_colored_polygon(hover_verts, Color(1, 1, 1, 0.15))

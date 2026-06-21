@@ -165,20 +165,22 @@ static func _post_process_coastal(provinces: Dictionary, grid: Dictionary) -> vo
 
 
 static func _merge_small_provinces(provinces: Array, grid: Dictionary, min_size: int) -> void:
+	# Build hex -> province index once; update incrementally on merge.
+	# Dead provinces are marked and compacted at the end (avoids index shifting
+	# and rebuilding hex_to_idx every pass).
+	var hex_to_idx: Dictionary = {}
+	for i in range(provinces.size()):
+		for c in provinces[i].hexes:
+			hex_to_idx[c] = i
+
+	var dead: Dictionary = {}
+
 	while true:
 		var changed = false
-		var active: Array[int] = []
+
 		for i in range(provinces.size()):
-			active.append(i)
-
-		var hex_to_idx: Dictionary = {}
-		for i in active:
-			for c in provinces[i].hexes:
-				hex_to_idx[c] = i
-
-		var to_remove: Array[int] = []
-
-		for i in active:
+			if dead.has(i):
+				continue
 			if provinces[i].hexes.size() >= min_size:
 				continue
 
@@ -188,10 +190,8 @@ static func _merge_small_provinces(provinces: Array, grid: Dictionary, min_size:
 					var neighbor = _HexUtils.cube_neighbor(c, d)
 					if hex_to_idx.has(neighbor):
 						var n_idx = hex_to_idx[neighbor]
-						if n_idx != i:
-							if not neighbor_counts.has(n_idx):
-								neighbor_counts[n_idx] = 0
-							neighbor_counts[n_idx] += 1
+						if n_idx != i and not dead.has(n_idx):
+							neighbor_counts[n_idx] = neighbor_counts.get(n_idx, 0) + 1
 
 			if neighbor_counts.is_empty():
 				continue
@@ -206,15 +206,23 @@ static func _merge_small_provinces(provinces: Array, grid: Dictionary, min_size:
 			if best_idx != -1:
 				for c in provinces[i].hexes:
 					grid[c].province_id = provinces[best_idx].id
+					hex_to_idx[c] = best_idx
 				provinces[best_idx].hexes.append_array(provinces[i].hexes)
-				to_remove.append(i)
+				provinces[i].hexes.clear()
+				dead[i] = true
 				changed = true
 
 		if not changed:
 			break
 
-		for i in range(to_remove.size() - 1, -1, -1):
-			provinces.remove_at(to_remove[i])
+	# Compact dead provinces (reverse order to keep indices stable during removal).
+	var to_compact: Array[int] = []
+	for i in range(provinces.size()):
+		if dead.has(i):
+			to_compact.append(i)
+	to_compact.reverse()
+	for i in to_compact:
+		provinces.remove_at(i)
 
 
 static func _generate_province_names() -> Array[String]:

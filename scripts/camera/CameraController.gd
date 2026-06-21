@@ -14,6 +14,11 @@ var _is_dragging: bool = false
 var _drag_start: Vector2
 var _drag_start_pos: Vector2
 
+var _last_emit_pos: Vector2 = Vector2(INF, INF)
+var _last_emit_zoom: float = -1.0
+const _MOVE_THRESHOLD: float = 0.5
+const _ZOOM_THRESHOLD: float = 0.001
+
 
 func _ready() -> void:
 	_target_position = position
@@ -78,6 +83,11 @@ func _smooth_move(delta: float) -> void:
 
 
 func _emit_camera_update() -> void:
+	if position.distance_squared_to(_last_emit_pos) < _MOVE_THRESHOLD * _MOVE_THRESHOLD \
+			and abs(zoom.x - _last_emit_zoom) < _ZOOM_THRESHOLD:
+		return
+	_last_emit_pos = position
+	_last_emit_zoom = zoom.x
 	EventBus.camera_moved.emit(position, zoom.x)
 
 

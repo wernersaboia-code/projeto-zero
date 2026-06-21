@@ -12,16 +12,18 @@ const PROCESSING_ORDER: Array[int] = [
 
 
 static func process_turn(nations: Dictionary, cells: Dictionary) -> void:
+	var nation_cells = _build_nation_cells(cells)
 	for nid in nations:
-		_calculate(nations[nid], cells)
+		_calculate(nations[nid], nation_cells.get(nid, []))
 	for nid in nations:
 		_apply_stockpiles(nations[nid])
 		_update_treasury(nations[nid])
 
 
 static func calculate_all(nations: Dictionary, cells: Dictionary) -> void:
+	var nation_cells = _build_nation_cells(cells)
 	for nid in nations:
-		_calculate(nations[nid], cells)
+		_calculate(nations[nid], nation_cells.get(nid, []))
 
 
 static func apply_all(nations: Dictionary) -> void:
@@ -30,14 +32,26 @@ static func apply_all(nations: Dictionary) -> void:
 		_update_treasury(nations[nid])
 
 
-static func _calculate(nation, cells: Dictionary) -> void:
+static func _build_nation_cells(cells: Dictionary) -> Dictionary:
+	var nation_cells: Dictionary = {}
+	for cube in cells:
+		var cell = cells[cube]
+		var nid = cell.owner_nation_id
+		if nid < 0:
+			continue
+		var arr = nation_cells.get(nid, null)
+		if arr == null:
+			arr = []
+			nation_cells[nid] = arr
+		arr.append(cell)
+	return nation_cells
+
+
+static func _calculate(nation, owned_cells: Array) -> void:
 	nation.resource_production.clear()
 	nation.resource_consumption.clear()
 
-	for cube in cells:
-		var cell = cells[cube]
-		if cell.owner_nation_id != nation.id:
-			continue
+	for cell in owned_cells:
 		if cell.resource_type >= 0 and R.is_raw(cell.resource_type):
 			var prod = float(cell.resource_amount) * 0.1
 			nation.resource_production[cell.resource_type] = nation.resource_production.get(cell.resource_type, 0.0) + prod
